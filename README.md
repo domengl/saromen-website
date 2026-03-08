@@ -17,7 +17,7 @@ copy .env.example .env
 
 Uredi `.env` in nastavi vsaj:
 - `AUTH_SECRET`
-- `DATABASE_URL` (za lokalno lahko ostane `file:./dev.db`)
+- `DATABASE_URL` (za lokalno lahko ostane `file:./prisma/dev.db`)
 - `STRIPE_SECRET_KEY` in `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` (test keys)
 
 ## 2) Install + Prisma
