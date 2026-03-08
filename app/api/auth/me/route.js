@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+export const dynamic = "force-dynamic";
+
 import { prisma } from "@/lib/prisma";
 import { getUserSession } from "@/lib/auth";
 
@@ -18,3 +20,5 @@ export async function GET(request) {
     return NextResponse.json({ user: null });
   }
 }
+
+

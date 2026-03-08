@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+export const dynamic = "force-dynamic";
+
 import { clearUserSessionCookie } from "@/lib/auth";
 
 export async function POST() {
@@ -7,3 +9,5 @@ export async function POST() {
   response.cookies.set(cookie.name, cookie.value, cookie.options);
   return response;
 }
+
+

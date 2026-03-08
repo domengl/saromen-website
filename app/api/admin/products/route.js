@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+export const dynamic = "force-dynamic";
+
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { isAdminRequest } from "@/lib/admin";
@@ -62,3 +64,5 @@ export async function POST(request) {
     return NextResponse.json({ message: "Dodajanje izdelka ni uspelo." }, { status: 400 });
   }
 }
+
+

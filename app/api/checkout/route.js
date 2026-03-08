@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+export const dynamic = "force-dynamic";
+
 import Stripe from "stripe";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
@@ -168,3 +170,5 @@ export async function POST(request) {
     return NextResponse.json({ message: "Checkout ni uspel." }, { status: 400 });
   }
 }
+
+

@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+export const dynamic = "force-dynamic";
+
 import { createAdminSessionCookie, getAdminSession } from "@/lib/auth";
 
 const USERNAME = process.env.ADMIN_USERNAME || "admin";
@@ -24,3 +26,5 @@ export async function POST(request) {
     return NextResponse.json({ message: "Admin prijava ni uspela." }, { status: 400 });
   }
 }
+
+
