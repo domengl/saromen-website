@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { getCoupons } from "@/lib/store";
 import { getUserSession } from "@/lib/auth";
 import { sendOrderEmail } from "@/lib/email";
+import { hashVoucherCode, validateSignedVoucherCode } from "@/lib/vouchers";
 
 const schema = z.object({
   items: z
@@ -24,6 +25,7 @@ const schema = z.object({
     )
     .min(1),
   couponCode: z.string().nullable().optional(),
+  voucherCode: z.string().nullable().optional(),
   customerEmail: z.string().email()
 });
 
@@ -43,12 +45,35 @@ export async function POST(request) {
     const subtotal = parsed.items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
     const coupons = await getCoupons();
     const coupon = parsed.couponCode ? coupons.find((item) => item.code === parsed.couponCode && item.active !== false) : null;
+    const voucherCode = parsed.voucherCode ? String(parsed.voucherCode).trim().toUpperCase() : null;
 
-    let discount = 0;
+    let couponDiscount = 0;
     if (coupon && subtotal >= Number(coupon.minAmount || 0)) {
-      discount = subtotal * (Number(coupon.percent || 0) / 100);
+      couponDiscount = subtotal * (Number(coupon.percent || 0) / 100);
     }
 
+    let voucher = null;
+    let voucherDiscount = 0;
+    if (voucherCode) {
+      try {
+        voucher = await prisma.giftVoucher.findUnique({
+          where: { codeHash: hashVoucherCode(voucherCode) }
+        });
+      } catch {
+        voucher = null;
+      }
+      if (voucher && voucher.status === "ACTIVE" && !voucher.redeemedAt) {
+        voucherDiscount = Math.min(Math.max(0, subtotal - couponDiscount), Number(voucher.amount || 0));
+      } else {
+        const signed = validateSignedVoucherCode(voucherCode);
+        if (!signed) {
+          return NextResponse.json({ message: "Darilni bon ni veljaven." }, { status: 400 });
+        }
+        voucherDiscount = Math.min(Math.max(0, subtotal - couponDiscount), Number(signed.amount || 0));
+      }
+    }
+
+    const discount = couponDiscount + voucherDiscount;
     const afterDiscount = Math.max(0, subtotal - discount);
     const shipping = afterDiscount === 0 ? 0 : afterDiscount >= 50 ? 0 : 4.9;
     const total = afterDiscount + shipping;
@@ -92,6 +117,13 @@ export async function POST(request) {
     }
 
     const stripeKey = process.env.STRIPE_SECRET_KEY;
+    if (voucher && dbOrder) {
+      await prisma.giftVoucher.updateMany({
+        where: { id: voucher.id, redeemedAt: null, status: "ACTIVE" },
+        data: { status: "REDEEMED", redeemedAt: new Date(), redeemedOrderNumber: orderNumber }
+      });
+    }
+
     if (stripeKey) {
       const stripe = new Stripe(stripeKey);
       const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";

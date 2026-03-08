@@ -187,21 +187,24 @@ function detectSeason() {
   return "classic";
 }
 
-export default function Storefront({ shopOnly = false }) {
+export default function Storefront({ shopOnly = false, preset = "all" }) {
   const [lang, setLang] = useLanguage("sl");
   const t = TRANSLATIONS[lang] || TRANSLATIONS.sl;
   const [products, setProducts] = useState([]);
   const [coupons, setCoupons] = useState([]);
   const [category, setCategory] = useState("all");
+  const [search, setSearch] = useState("");
   const [season, setSeason] = useState("classic");
   const [cartOpen, setCartOpen] = useState(false);
   const [cart, setCart] = useState([]);
   const [couponCode, setCouponCode] = useState("");
   const [activeCoupon, setActiveCoupon] = useState(null);
+  const [activeVoucher, setActiveVoucher] = useState(null);
   const [couponMessage, setCouponMessage] = useState("");
   const [checkoutMessage, setCheckoutMessage] = useState("");
   const [user, setUser] = useState(null);
   const [customMessage, setCustomMessage] = useState("");
+  const [giftMessage, setGiftMessage] = useState("");
   const [customPreview, setCustomPreview] = useState({
     text: "",
     scent: "Amber Vanilla",
@@ -239,23 +242,38 @@ export default function Storefront({ shopOnly = false }) {
     load();
   }, []);
 
-  const categories = useMemo(() => ["all", ...new Set(products.map((item) => item.category))], [products]);
+  const presetProducts = useMemo(() => {
+    if (preset === "top") return products.filter((item) => item.isTop);
+    if (preset === "discount") return products.filter((item) => item.salePercent > 0);
+    if (preset === "new") return products.filter((item) => item.isNew);
+    return products;
+  }, [products, preset]);
+
+  const categories = useMemo(() => ["all", ...new Set(presetProducts.map((item) => item.category))], [presetProducts]);
   const topHits = useMemo(() => products.filter((item) => item.isTop), [products]);
   const discounts = useMemo(() => products.filter((item) => item.salePercent > 0), [products]);
   const novosti = useMemo(() => products.filter((item) => item.isNew), [products]);
   const catalog = useMemo(
-    () => (category === "all" ? products : products.filter((item) => item.category === category)),
-    [category, products]
+    () =>
+      (category === "all" ? presetProducts : presetProducts.filter((item) => item.category === category)).filter((item) => {
+        if (!search.trim()) return true;
+        const query = search.toLowerCase();
+        return [item.name, item.scent, item.description, item.category].join(" ").toLowerCase().includes(query);
+      }),
+    [category, presetProducts, search]
   );
   const seasonExtra = useMemo(() => seasonDiscount(season), [season]);
+  const shopHeading = preset === "top" ? t.navTopHits : preset === "discount" ? t.navDiscounts : preset === "new" ? t.navNews : t.navShop;
 
   const totals = useMemo(() => {
     const subtotal = cart.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
-    const discount = activeCoupon && subtotal >= activeCoupon.minAmount ? subtotal * (activeCoupon.percent / 100) : 0;
+    const couponDiscount = activeCoupon && subtotal >= activeCoupon.minAmount ? subtotal * (activeCoupon.percent / 100) : 0;
+    const voucherDiscount = activeVoucher ? Math.min(Math.max(0, subtotal - couponDiscount), Number(activeVoucher.amount || 0)) : 0;
+    const discount = couponDiscount + voucherDiscount;
     const discounted = Math.max(0, subtotal - discount);
     const shipping = discounted === 0 ? 0 : discounted >= 50 ? 0 : 4.9;
-    return { subtotal, discount, shipping, total: discounted + shipping };
-  }, [cart, activeCoupon]);
+    return { subtotal, discount, shipping, total: discounted + shipping, couponDiscount, voucherDiscount };
+  }, [cart, activeCoupon, activeVoucher]);
 
   const cartCount = useMemo(() => cart.reduce((sum, item) => sum + item.quantity, 0), [cart]);
 
@@ -343,19 +361,35 @@ export default function Storefront({ shopOnly = false }) {
     setCart((prev) => prev.filter((item) => item.id !== itemId));
   }
 
-  function applyCoupon() {
+  async function applyCoupon() {
     const code = couponCode.trim().toUpperCase();
+    if (!code) return;
     const found = coupons.find((item) => item.code === code);
-    if (!found) {
+    if (found) {
+      if (totals.subtotal < found.minAmount) {
+        setCouponMessage(t.couponMin(formatPrice(found.minAmount)));
+        return;
+      }
+      setActiveCoupon(found);
+      setActiveVoucher(null);
+      setCouponMessage(t.couponApplied(found.code, found.percent));
+      return;
+    }
+
+    const response = await fetch("/api/vouchers/validate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code })
+    });
+    const data = await response.json();
+    if (!response.ok || !data.valid) {
       setCouponMessage(t.couponMissing);
       return;
     }
-    if (totals.subtotal < found.minAmount) {
-      setCouponMessage(t.couponMin(formatPrice(found.minAmount)));
-      return;
-    }
-    setActiveCoupon(found);
-    setCouponMessage(t.couponApplied(found.code, found.percent));
+
+    setActiveCoupon(null);
+    setActiveVoucher({ code, amount: data.amount });
+    setCouponMessage(`Darilni bon aktiviran (${formatPrice(data.amount)}).`);
   }
 
   async function checkout() {
@@ -372,6 +406,7 @@ export default function Storefront({ shopOnly = false }) {
       body: JSON.stringify({
         items: cart,
         couponCode: activeCoupon?.code || null,
+        voucherCode: activeVoucher?.code || null,
         customerEmail: user.email
       })
     });
@@ -392,12 +427,43 @@ export default function Storefront({ shopOnly = false }) {
     );
     setCart([]);
     setActiveCoupon(null);
+    setActiveVoucher(null);
     setCouponCode("");
   }
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
     setUser(null);
+  }
+
+  async function purchaseVoucher(event) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    const payload = {
+      amount: Number(form.get("amount") || 0),
+      recipientEmail: String(form.get("recipientEmail") || ""),
+      recipientName: String(form.get("recipientName") || ""),
+      purchaserEmail: String(form.get("purchaserEmail") || "")
+    };
+
+    setGiftMessage("Pripravljam darilni bon...");
+    const response = await fetch("/api/vouchers/purchase", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      setGiftMessage(data.message || "Nakup darilnega bona ni uspel.");
+      return;
+    }
+
+    if (data.emailSent) {
+      setGiftMessage(`Darilni bon ustvarjen. Koda je poslana na ${payload.recipientEmail}.`);
+    } else {
+      setGiftMessage(`Darilni bon ustvarjen. Email servis ni aktiven, uporabi kodo: ${data.code}`);
+    }
+    event.currentTarget.reset();
   }
 
   function ProductSection({ title, intro, items }) {
@@ -452,6 +518,9 @@ export default function Storefront({ shopOnly = false }) {
     <div className="pb-16">
       <div className="border-b border-[var(--line)] bg-[#26190f] px-4 py-4 text-center">
         <div className="mx-auto w-[min(1180px,92%)]">
+          <div className="flex justify-end">
+            <LanguageSwitcher lang={lang} setLang={setLang} />
+          </div>
           <p className="display-font text-4xl uppercase tracking-[0.09em] text-[#ffd7a2] md:text-6xl">{t.testTitle}</p>
           <p className="mt-2 text-xs uppercase tracking-[0.11em] text-[#ffd7a2] md:text-sm">{t.legal}</p>
         </div>
@@ -459,22 +528,27 @@ export default function Storefront({ shopOnly = false }) {
 
       <header className="sticky top-0 z-30 border-b border-[var(--line)] bg-[rgba(15,13,11,0.9)] backdrop-blur-md">
         <div className="mx-auto flex w-[min(1180px,92%)] flex-wrap items-center justify-between gap-4 py-4">
-          <a href={shopOnly ? "/shop" : "#home"} className="flex items-center gap-3">
-            <img src="/assets/saromen-logo.png" alt="SAROMEN logo" className="h-12 w-auto rounded-lg border border-[var(--line)] bg-black/30 p-1" />
-            <span className="display-font text-4xl tracking-[0.2em] text-[var(--gold)]">SAROMEN</span>
+          <a href="/" className="flex items-center gap-3">
+            <img src="/assets/saromen-logo.png" alt="SAROMEN logo" className="h-11 w-auto rounded-lg border border-[var(--line)] bg-black/30 p-1" />
           </a>
           <nav className="flex flex-wrap items-center gap-4 text-xs uppercase tracking-[0.11em] text-[#f3e7d5]">
             <a href="/shop">{t.navShop}</a>
-            <a href={shopOnly ? "/#top-hiti" : "#top-hiti"}>{t.navTopHits}</a>
-            <a href={shopOnly ? "/#popusti" : "#popusti"}>{t.navDiscounts}</a>
-            <a href={shopOnly ? "/#novosti" : "#novosti"}>{t.navNews}</a>
-            <a href={shopOnly ? "/#shop" : "#shop"}>{t.navDeals}</a>
-            <a href={shopOnly ? "/#personalized" : "#personalized"}>{t.navPersonalized}</a>
-            <a href={shopOnly ? "/#blog" : "#blog"}>{t.navBlog}</a>
-            <a href={shopOnly ? "/#kontakt" : "#kontakt"}>{t.navContact}</a>
+            <a href="/top-hits">{t.navTopHits}</a>
+            <a href="/popusti">{t.navDiscounts}</a>
+            <a href="/novosti">{t.navNews}</a>
+            <a href="/shop#personalized">{t.navPersonalized}</a>
+            <a href="/blog">{t.navBlog}</a>
+            <a href="/kontakt">{t.navContact}</a>
+            <a href="/faq">FAQ</a>
+            <a href="/help">Help</a>
           </nav>
           <div className="flex flex-wrap items-center gap-2">
-            <LanguageSwitcher lang={lang} setLang={setLang} />
+            <input
+              className="rounded-full border border-[var(--line)] bg-[rgba(255,255,255,0.04)] px-4 py-2 text-xs"
+              placeholder="Search..."
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+            />
             {user ? (
               <>
                 <a href="/profile" className="pill-btn">
@@ -570,7 +644,7 @@ export default function Storefront({ shopOnly = false }) {
       ) : null}
 
       <section id="shop" className="mx-auto w-[min(1180px,92%)] py-12">
-        <h2 className="display-font text-4xl text-[#fff5e8] md:text-5xl">{t.navShop}</h2>
+        <h2 className="display-font text-4xl text-[#fff5e8] md:text-5xl">{shopHeading}</h2>
         <p className="mb-6 mt-2 max-w-2xl text-[#dac7ae]">Razlicna podrocja: disavne, dekorativne, modni dodatek, dodatki in merch.</p>
         <div className="mb-5 flex flex-wrap gap-2">
           {categories.map((item) => (
@@ -690,6 +764,56 @@ export default function Storefront({ shopOnly = false }) {
         </div>
       </section>
 
+      <section id="gift-vouchers" className="mx-auto w-[min(1180px,92%)] py-12">
+        <h2 className="display-font text-4xl text-[#fff5e8] md:text-5xl">Darilni boni</h2>
+        <p className="mb-6 mt-2 max-w-2xl text-[#dac7ae]">Ob nakupu darilnega bona prejemnik prejme email z unikatno varnostno kodo za aktivacijo v trgovini.</p>
+        <div className="grid gap-4 md:grid-cols-[1.1fr_0.9fr]">
+          <form className="panel grid gap-2 p-5" onSubmit={purchaseVoucher}>
+            <label className="text-xs uppercase tracking-[0.1em] text-[#e7d2b5]">Znesek (EUR)</label>
+            <input name="amount" type="number" min="10" step="1" defaultValue="50" className="rounded-xl border border-[var(--line)] bg-[rgba(0,0,0,0.3)] p-3 text-sm" />
+            <label className="text-xs uppercase tracking-[0.1em] text-[#e7d2b5]">Email prejemnika</label>
+            <input name="recipientEmail" type="email" required className="rounded-xl border border-[var(--line)] bg-[rgba(0,0,0,0.3)] p-3 text-sm" placeholder="prejemnik@email.com" />
+            <label className="text-xs uppercase tracking-[0.1em] text-[#e7d2b5]">Ime prejemnika</label>
+            <input name="recipientName" className="rounded-xl border border-[var(--line)] bg-[rgba(0,0,0,0.3)] p-3 text-sm" placeholder="Ime in priimek" />
+            <label className="text-xs uppercase tracking-[0.1em] text-[#e7d2b5]">Email kupca</label>
+            <input name="purchaserEmail" type="email" className="rounded-xl border border-[var(--line)] bg-[rgba(0,0,0,0.3)] p-3 text-sm" placeholder="kupca@email.com" />
+            <button className="pill-btn border-[var(--gold)] bg-[var(--gold)] text-[#25190f]" type="submit">
+              Kupi darilni bon
+            </button>
+            <p className="text-sm text-[#f0c189]">{giftMessage}</p>
+          </form>
+          <div className="panel p-5">
+            <h3 className="display-font text-4xl text-[var(--gold)]">Aktivacija bona</h3>
+            <p className="mt-2 text-sm leading-7 text-[#dbc8ad]">
+              Kodo iz emaila vpises v kosarici v polje za kupon. Sistem preveri varnostni podpis kode in jo aktivira.
+            </p>
+            <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-7 text-[#dbc8ad]">
+              <li>Koda je unikatna in kriptografsko podpisana.</li>
+              <li>Bon se po uporabi oznaci kot porabljen.</li>
+              <li>Popust se odsteje pred izracunom postnine.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="faq" className="mx-auto w-[min(1180px,92%)] py-12">
+        <h2 className="display-font text-4xl text-[#fff5e8] md:text-5xl">Pogosta vprasanja</h2>
+        <div className="mt-4 grid gap-3">
+          <article className="panel p-5">
+            <h3 className="display-font text-3xl">Kako dolgo traja dostava?</h3>
+            <p className="mt-2 text-sm text-[#dbc8ad]">Standardna dostava je 2-5 dni, personalizirane svece 3-7 dni.</p>
+          </article>
+          <article className="panel p-5">
+            <h3 className="display-font text-3xl">Ali lahko vrnem izdelek?</h3>
+            <p className="mt-2 text-sm text-[#dbc8ad]">Da, v 14 dneh za nerabljene izdelke v originalni embalazi.</p>
+          </article>
+          <article className="panel p-5">
+            <h3 className="display-font text-3xl">Kako uporabim darilni bon?</h3>
+            <p className="mt-2 text-sm text-[#dbc8ad]">Kodo iz emaila vpises v polje kupon in kliknes Uporabi.</p>
+          </article>
+        </div>
+      </section>
+
       {!shopOnly ? (
         <>
           <section id="about" className="mx-auto w-[min(1180px,92%)] py-12">
@@ -752,15 +876,48 @@ export default function Storefront({ shopOnly = false }) {
       ) : null}
 
       <footer className="mx-auto w-[min(1180px,92%)] border-t border-[var(--line)] py-8">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-sm text-[#dbc8ad]">SAROMEN Candle Studio</p>
-          <div className="flex items-center gap-2">
-            <a href="https://instagram.com" target="_blank" rel="noreferrer" className="pill-btn">IG</a>
-            <a href="https://facebook.com" target="_blank" rel="noreferrer" className="pill-btn">FB</a>
-            <a href="https://tiktok.com" target="_blank" rel="noreferrer" className="pill-btn">TT</a>
-            <a href="https://youtube.com" target="_blank" rel="noreferrer" className="pill-btn">YT</a>
+        <div className="grid gap-6 md:grid-cols-[1fr_1fr_1fr]">
+          <div>
+            <p className="display-font text-3xl text-[var(--gold)]">Help & Support</p>
+            <div className="mt-3 grid gap-1 text-sm text-[#dbc8ad]">
+              <a href="/help" className="hover:text-[var(--gold)]">Center za pomoc</a>
+              <a href="/policy/privacy" className="hover:text-[var(--gold)]">Privacy Policy</a>
+              <a href="/policy/terms" className="hover:text-[var(--gold)]">Terms & Conditions</a>
+              <a href="/policy/shipping" className="hover:text-[var(--gold)]">Shipping & Returns</a>
+              <a href="/faq" className="hover:text-[var(--gold)]">FAQ</a>
+            </div>
+          </div>
+
+          <div>
+            <p className="display-font text-3xl text-[var(--gold)]">Placila</p>
+            <div className="mt-3 flex flex-wrap gap-2 text-xs uppercase tracking-[0.08em]">
+              <span className="rounded-full border border-[var(--line)] px-3 py-2">Visa</span>
+              <span className="rounded-full border border-[var(--line)] px-3 py-2">Mastercard</span>
+              <span className="rounded-full border border-[var(--line)] px-3 py-2">PayPal</span>
+              <span className="rounded-full border border-[var(--line)] px-3 py-2">Apple Pay</span>
+              <span className="rounded-full border border-[var(--line)] px-3 py-2">Google Pay</span>
+            </div>
+          </div>
+
+          <div>
+            <p className="display-font text-3xl text-[var(--gold)]">Social</p>
+            <div className="mt-3 flex gap-2">
+              <a href="https://instagram.com" target="_blank" rel="noreferrer" className="grid h-10 w-10 place-items-center rounded-full border border-[var(--line)]">
+                <svg viewBox="0 0 24 24" className="h-5 w-5 fill-none stroke-current stroke-2"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1.2" className="fill-current stroke-0"/></svg>
+              </a>
+              <a href="https://facebook.com" target="_blank" rel="noreferrer" className="grid h-10 w-10 place-items-center rounded-full border border-[var(--line)]">
+                <svg viewBox="0 0 24 24" className="h-5 w-5 fill-current"><path d="M13.5 4h3V0h-3.2C9.8 0 8 2.2 8 5.7V9H5v4h3v11h4.6V13h3.2l.7-4h-3.9V6c0-1.2.4-2 1.9-2Z"/></svg>
+              </a>
+              <a href="https://tiktok.com" target="_blank" rel="noreferrer" className="grid h-10 w-10 place-items-center rounded-full border border-[var(--line)]">
+                <svg viewBox="0 0 24 24" className="h-5 w-5 fill-current"><path d="M17.3 2c.2 1.8 1.2 3 2.9 3.5v3.4a7.1 7.1 0 0 1-3-.7v6.8a6 6 0 1 1-6-6h.5v3.2h-.5a2.8 2.8 0 1 0 2.8 2.8V2h3.3Z"/></svg>
+              </a>
+              <a href="https://youtube.com" target="_blank" rel="noreferrer" className="grid h-10 w-10 place-items-center rounded-full border border-[var(--line)]">
+                <svg viewBox="0 0 24 24" className="h-5 w-5 fill-current"><path d="M23 7.6a3.2 3.2 0 0 0-2.2-2.3C18.8 4.8 12 4.8 12 4.8s-6.8 0-8.8.5A3.2 3.2 0 0 0 1 7.6 33 33 0 0 0 .5 12c0 1.5.2 3 .5 4.4a3.2 3.2 0 0 0 2.2 2.3c2 .5 8.8.5 8.8.5s6.8 0 8.8-.5a3.2 3.2 0 0 0 2.2-2.3c.3-1.4.5-2.9.5-4.4s-.2-3-.5-4.4ZM10 15.5V8.5L16 12l-6 3.5Z"/></svg>
+              </a>
+            </div>
           </div>
         </div>
+        <p className="mt-8 text-xs text-[#c8b094]">Copyright (c) {new Date().getFullYear()} SAROMEN. Vse pravice pridrzane.</p>
       </footer>
 
       <aside
@@ -840,6 +997,7 @@ export default function Storefront({ shopOnly = false }) {
               onClick={() => {
                 setCart([]);
                 setActiveCoupon(null);
+                setActiveVoucher(null);
                 setCouponCode("");
                 setCheckoutMessage("");
               }}

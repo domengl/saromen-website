@@ -27,9 +27,10 @@ export function useLanguage(defaultLang = "sl") {
 }
 
 export default function LanguageSwitcher({ lang, setLang, className = "" }) {
+  const label = lang === "en" ? "Language" : lang === "de" ? "Sprache" : "Jezik";
   return (
     <label className={`inline-flex items-center gap-2 rounded-full border border-[var(--line)] bg-[rgba(255,255,255,0.02)] px-3 py-2 text-xs uppercase tracking-[0.08em] ${className}`}>
-      <span className="text-[#dbc8ad]">Lang</span>
+      <span className="text-[#dbc8ad]">{label}</span>
       <select
         value={lang}
         onChange={(event) => setLang(event.target.value)}

@@ -84,3 +84,18 @@ model OrderItem {
   etaDays    Int     @default(1)
   note       String?
 }
+
+model GiftVoucher {
+  id                 String   @id @default(cuid())
+  codeHash           String   @unique
+  amount             Float
+  recipientEmail     String
+  recipientName      String?
+  purchaserEmail     String?
+  currency           String   @default("EUR")
+  status             String   @default("ACTIVE")
+  redeemedAt         DateTime?
+  redeemedOrderNumber String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}

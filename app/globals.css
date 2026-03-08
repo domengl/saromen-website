@@ -3,12 +3,12 @@
 @tailwind utilities;
 
 :root {
-  --black: #0f0d0b;
-  --panel: #181512;
-  --gold: #c8a26f;
+  --black: #20160f;
+  --panel: #2a1d14;
+  --gold: #c79a62;
   --cream: #f7efe2;
   --beige: #ead9c0;
-  --line: rgba(200, 162, 111, 0.24);
+  --line: rgba(199, 154, 98, 0.34);
 }
 
 * {
@@ -23,7 +23,8 @@ body {
   margin: 0;
   color: var(--cream);
   background:
-    radial-gradient(circle at 80% 18%, rgba(200, 162, 111, 0.18), transparent 32%),
+    radial-gradient(circle at 80% 18%, rgba(215, 174, 122, 0.24), transparent 35%),
+    radial-gradient(circle at 10% 80%, rgba(182, 130, 77, 0.18), transparent 40%),
     url("/assets/candle-bg.svg") center top / cover no-repeat fixed,
     radial-gradient(circle at 82% 18%, rgba(200, 162, 111, 0.2), transparent 34%),
     radial-gradient(circle at 12% 82%, rgba(200, 162, 111, 0.12), transparent 42%),
@@ -42,13 +43,13 @@ a {
 .panel {
   border: 1px solid var(--line);
   border-radius: 1rem;
-  background: linear-gradient(154deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01));
+  background: linear-gradient(154deg, rgba(255, 240, 218, 0.08), rgba(255, 255, 255, 0.02));
 }
 
 .pill-btn {
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(255, 244, 226, 0.06);
   color: var(--cream);
   padding: 0.55rem 0.9rem;
   font-size: 0.75rem;
