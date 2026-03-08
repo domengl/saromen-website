@@ -198,6 +198,7 @@ export default function Storefront({ shopOnly = false, preset = "all" }) {
     base: "Signature Jar",
     logoUrl: ""
   });
+  const [openedProduct, setOpenedProduct] = useState(null);
 
   useEffect(() => {
     return () => {
@@ -264,6 +265,12 @@ export default function Storefront({ shopOnly = false, preset = "all" }) {
   }, [cart, activeCoupon, activeVoucher]);
 
   const cartCount = useMemo(() => cart.reduce((sum, item) => sum + item.quantity, 0), [cart]);
+  const profileName = useMemo(() => {
+    if (!user) return "";
+    if (user.name && String(user.name).trim()) return String(user.name).trim();
+    if (user.email && String(user.email).trim()) return String(user.email).trim();
+    return "User";
+  }, [user]);
 
   function stockInCart(productId) {
     return cart.filter((item) => item.type === "catalog" && item.productId === productId && !item.preorder).reduce((sum, item) => sum + item.quantity, 0);
@@ -492,14 +499,50 @@ export default function Storefront({ shopOnly = false, preset = "all" }) {
                   <span className="text-lg font-bold text-[var(--gold)]">{formatPrice(currentPrice)}</span>
                   {product.salePercent || seasonExtra > 0 ? <span className="text-sm text-[#96836a] line-through">{formatPrice(product.price)}</span> : null}
                 </div>
-                <button className="pill-btn" disabled={disabled} onClick={() => addCatalogProduct(product)}>
-                  {available > 0 ? t.addToCart : canPreorder ? t.preOrder(product.etaDays) : t.unavailable}
-                </button>
+                <div className="mt-auto grid grid-cols-2 gap-2">
+                  <button className="pill-btn" onClick={() => setOpenedProduct(product)}>
+                    Odpri izdelek
+                  </button>
+                  <button className="pill-btn" disabled={disabled} onClick={() => addCatalogProduct(product)}>
+                    {available > 0 ? t.addToCart : canPreorder ? t.preOrder(product.etaDays) : t.unavailable}
+                  </button>
+                </div>
               </article>
             );
           })}
         </div>
       </section>
+    );
+  }
+
+  function PaymentLogos({ compact = false }) {
+    const cardSize = compact ? "h-8 min-w-[70px] px-2 text-[10px]" : "h-10 min-w-[94px] px-3 text-xs";
+    return (
+      <div className={`flex flex-wrap gap-2 ${compact ? "" : "mt-3"}`}>
+        <span className={`inline-flex items-center justify-center rounded-full border border-[var(--line)] bg-[#17130f] font-semibold tracking-[0.08em] ${cardSize}`}>
+          VISA
+        </span>
+        <span className={`inline-flex items-center gap-1 rounded-full border border-[var(--line)] bg-[#17130f] font-semibold tracking-[0.05em] ${cardSize}`}>
+          <svg viewBox="0 0 24 12" className="h-3 w-5" aria-hidden="true">
+            <circle cx="9" cy="6" r="4.8" fill="#dd4b39" />
+            <circle cx="15" cy="6" r="4.8" fill="#f4b942" />
+          </svg>
+          MC
+        </span>
+        <span className={`inline-flex items-center gap-1 rounded-full border border-[var(--line)] bg-[#17130f] font-semibold tracking-[0.05em] ${cardSize}`}>
+          <svg viewBox="0 0 24 24" className="h-3 w-3 fill-[#5ea7ff]" aria-hidden="true">
+            <path d="M7 7h5a5 5 0 0 1 0 10H9v4H5V9a2 2 0 0 1 2-2Z" />
+            <path d="M13 7h4a2 2 0 0 1 2 2v8h-6a5 5 0 0 0 0-10Z" />
+          </svg>
+          PayPal
+        </span>
+        <span className={`inline-flex items-center justify-center rounded-full border border-[var(--line)] bg-[#17130f] font-semibold tracking-[0.05em] ${cardSize}`}>
+          Apple Pay
+        </span>
+        <span className={`inline-flex items-center justify-center rounded-full border border-[var(--line)] bg-[#17130f] font-semibold tracking-[0.05em] ${cardSize}`}>
+          G Pay
+        </span>
+      </div>
     );
   }
 
@@ -540,8 +583,17 @@ export default function Storefront({ shopOnly = false, preset = "all" }) {
             />
             {user ? (
               <>
-                <a href="/profile" className="pill-btn">
-                  {t.profile}
+                <a
+                  href="/profile"
+                  className="inline-flex max-w-[210px] items-center gap-2 rounded-full border border-[var(--line)] bg-[rgba(255,255,255,0.04)] px-2 py-1"
+                >
+                  <span className="grid h-8 w-8 place-items-center rounded-full border border-[var(--line)] bg-[#1f1711]">
+                    <svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current text-[#f2d7b3]" aria-hidden="true">
+                      <circle cx="12" cy="8.2" r="3.2" strokeWidth="1.8" />
+                      <path d="M4.6 19c1.2-3 4-4.8 7.4-4.8s6.2 1.8 7.4 4.8" strokeWidth="1.8" strokeLinecap="round" />
+                    </svg>
+                  </span>
+                  <span className="truncate text-xs text-[#f2e0c5]">{profileName}</span>
                 </a>
                 <button className="pill-btn" onClick={logout}>
                   {t.logout}
@@ -552,9 +604,6 @@ export default function Storefront({ shopOnly = false, preset = "all" }) {
                 {t.login}
               </a>
             )}
-            <button className="pill-btn" onClick={() => setCartOpen(true)}>
-              {t.cart} ({cartCount})
-            </button>
           </div>
         </div>
       </header>
@@ -572,6 +621,13 @@ export default function Storefront({ shopOnly = false, preset = "all" }) {
           </div>
         </div>
       </div>
+
+      <button
+        className="fixed right-3 top-1/2 z-30 -translate-y-1/2 rounded-full border border-[var(--gold)] bg-[#1a140f] px-3 py-2 text-xs font-semibold text-[var(--gold)] shadow-[0_12px_30px_rgba(0,0,0,0.35)] transition hover:bg-[#241a13] lg:right-5"
+        onClick={() => setCartOpen(true)}
+      >
+        {t.cart} ({cartCount})
+      </button>
 
       {!shopOnly ? (
         <>
@@ -654,12 +710,43 @@ export default function Storefront({ shopOnly = false, preset = "all" }) {
                 <span className="text-lg font-bold text-[var(--gold)]">{formatPrice(Number((effectivePrice(product) * (1 - seasonExtra / 100)).toFixed(2)))}</span>
                 {product.salePercent || seasonExtra > 0 ? <span className="text-sm text-[#96836a] line-through">{formatPrice(product.price)}</span> : null}
               </div>
-              <button className="pill-btn" onClick={() => addCatalogProduct(product)}>
-                {t.addToCart}
-              </button>
+              <div className="mt-auto grid grid-cols-2 gap-2">
+                <button className="pill-btn" onClick={() => setOpenedProduct(product)}>
+                  Odpri izdelek
+                </button>
+                <button className="pill-btn" onClick={() => addCatalogProduct(product)}>
+                  {t.addToCart}
+                </button>
+              </div>
             </article>
           ))}
         </div>
+        {openedProduct ? (
+          <article className="panel mt-5 grid gap-4 p-5 md:grid-cols-[300px_1fr]">
+            <img src={productImage(openedProduct)} alt={openedProduct.name} className="aspect-square w-full rounded-2xl border border-[var(--line)] object-cover" />
+            <div>
+              <p className="text-xs uppercase tracking-[0.1em] text-[#f0c189]">{categoryLabel(openedProduct.category, lang)}</p>
+              <h3 className="display-font mt-2 text-5xl text-[#fff8ec]">{openedProduct.name}</h3>
+              <p className="mt-1 text-sm text-[#e0ccb1]">{openedProduct.scent}</p>
+              <p className="mt-4 text-sm leading-8 text-[#dbc8ad]">{openedProduct.description}</p>
+              <div className="mt-4 grid gap-2 text-sm text-[#dbc8ad] md:grid-cols-3">
+                <p className="rounded-xl border border-[var(--line)] px-3 py-2">Cena: {formatPrice(Number((effectivePrice(openedProduct) * (1 - seasonExtra / 100)).toFixed(2)))}</p>
+                <p className="rounded-xl border border-[var(--line)] px-3 py-2">{Number(openedProduct.stock || 0) > 0 ? t.stock(openedProduct.stock) : t.outOfStock(openedProduct.etaDays)}</p>
+                <p className="rounded-xl border border-[var(--line)] px-3 py-2">Rocna izdelava premium voska</p>
+              </div>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <button className="pill-btn border-[var(--gold)] bg-[var(--gold)] text-[#25190f]" onClick={() => addCatalogProduct(openedProduct)}>
+                  {t.addToCart}
+                </button>
+                <button className="pill-btn" onClick={() => setOpenedProduct(null)}>
+                  Zapri
+                </button>
+              </div>
+            </div>
+          </article>
+        ) : (
+          <p className="mt-4 text-xs uppercase tracking-[0.1em] text-[#d8c0a1]">Klikni &quot;Odpri izdelek&quot; za podrobnosti in opis spodaj.</p>
+        )}
       </section>
 
       <section id="personalized" className="mx-auto w-[min(1180px,92%)] py-12">
@@ -876,13 +963,7 @@ export default function Storefront({ shopOnly = false, preset = "all" }) {
 
           <div>
             <p className="display-font text-3xl text-[var(--gold)]">Placila</p>
-            <div className="mt-3 flex flex-wrap gap-2 text-xs uppercase tracking-[0.08em]">
-              <span className="rounded-full border border-[var(--line)] px-3 py-2">Visa</span>
-              <span className="rounded-full border border-[var(--line)] px-3 py-2">Mastercard</span>
-              <span className="rounded-full border border-[var(--line)] px-3 py-2">PayPal</span>
-              <span className="rounded-full border border-[var(--line)] px-3 py-2">Apple Pay</span>
-              <span className="rounded-full border border-[var(--line)] px-3 py-2">Google Pay</span>
-            </div>
+            <PaymentLogos />
           </div>
 
           <div>
@@ -993,6 +1074,10 @@ export default function Storefront({ shopOnly = false, preset = "all" }) {
             <button className="pill-btn border-[var(--gold)] bg-[var(--gold)] text-[#25190f]" onClick={checkout}>
               Checkout
             </button>
+          </div>
+          <div className="mt-3">
+            <p className="text-[10px] uppercase tracking-[0.1em] text-[#d6be9e]">Varna placila</p>
+            <PaymentLogos compact />
           </div>
           <p className="mt-2 text-xs text-[#f0c189]">{checkoutMessage}</p>
         </div>
