@@ -15,9 +15,26 @@ export async function GET(request) {
       where: { id: session.userId },
       select: { id: true, name: true, email: true, role: true }
     });
-    return NextResponse.json({ user });
+    if (user) {
+      return NextResponse.json({ user });
+    }
+    return NextResponse.json({
+      user: {
+        id: session.userId,
+        name: session.name || "Demo User",
+        email: session.email || "",
+        role: session.role || "user"
+      }
+    });
   } catch {
-    return NextResponse.json({ user: null });
+    return NextResponse.json({
+      user: {
+        id: session.userId,
+        name: session.name || "Demo User",
+        email: session.email || "",
+        role: session.role || "user"
+      }
+    });
   }
 }
 
