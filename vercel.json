@@ -1,0 +1,27 @@
+{
+  "routes": [
+    {
+      "src": "/login",
+      "dest": "/login.html"
+    },
+    {
+      "src": "/((?!login$|api/).*)",
+      "continue": true,
+      "missing": [
+        {
+          "type": "cookie",
+          "key": "saromen_auth",
+          "value": "saromen_private_access_v1"
+        }
+      ]
+    },
+    {
+      "src": "/((?!login$|api/).*)",
+      "dest": "/login"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
+  ]
+}

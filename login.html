@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SAROMEN | Private Access</title>
+  <meta name="robots" content="noindex,nofollow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;700&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --black: #0f0d0b;
+      --gold: #c8a26f;
+      --cream: #f7efe2;
+      --line: rgba(200, 162, 111, 0.35);
+      --font-serif: "Cormorant Garamond", Georgia, serif;
+      --font-sans: "Manrope", "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--cream);
+      font-family: var(--font-sans);
+      background:
+        radial-gradient(circle at top right, rgba(200, 162, 111, 0.15), transparent 35%),
+        radial-gradient(circle at bottom left, rgba(200, 162, 111, 0.1), transparent 40%),
+        var(--black);
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .auth-card {
+      width: min(440px, 100%);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 28px;
+      background: linear-gradient(155deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01));
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    .title {
+      margin: 0 0 8px;
+      font-family: var(--font-serif);
+      color: var(--gold);
+      font-size: clamp(34px, 8vw, 48px);
+      letter-spacing: 4px;
+      text-align: center;
+    }
+
+    .subtitle {
+      margin: 0 0 24px;
+      text-align: center;
+      color: #e7d6bf;
+      font-size: 14px;
+    }
+
+    .field {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: #e0cab0;
+    }
+
+    input {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: rgba(0, 0, 0, 0.35);
+      color: var(--cream);
+      border-radius: 12px;
+      padding: 11px 12px;
+      font-size: 15px;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 2px rgba(200, 162, 111, 0.2);
+    }
+
+    .submit-btn {
+      width: 100%;
+      margin-top: 10px;
+      border: none;
+      border-radius: 999px;
+      padding: 12px 16px;
+      background: var(--gold);
+      color: #271c11;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      cursor: pointer;
+    }
+
+    .submit-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .error {
+      min-height: 20px;
+      margin-top: 12px;
+      font-size: 13px;
+      color: #f0b472;
+      text-align: center;
+    }
+
+    .legal {
+      margin-top: 18px;
+      text-align: center;
+      font-size: 11px;
+      letter-spacing: 0.8px;
+      color: #cdb698;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+  <main class="auth-card">
+    <h1 class="title">SAROMEN</h1>
+    <p class="subtitle">Zasebna testna stran. Vnesi prijavne podatke za dostop.</p>
+
+    <form id="loginForm">
+      <div class="field">
+        <label for="username">Username</label>
+        <input id="username" name="username" type="text" autocomplete="username" required />
+      </div>
+
+      <div class="field">
+        <label for="password">Geslo</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" required />
+      </div>
+
+      <button class="submit-btn" id="submitBtn" type="submit">Prijava</button>
+      <p class="error" id="errorText"></p>
+    </form>
+
+    <p class="legal">Access restricted for testing purposes only.</p>
+  </main>
+
+  <script>
+    const form = document.getElementById("loginForm");
+    const submitBtn = document.getElementById("submitBtn");
+    const errorText = document.getElementById("errorText");
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      errorText.textContent = "";
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Prijava...";
+
+      const formData = new FormData(form);
+      const username = (formData.get("username") || "").toString().trim();
+      const password = (formData.get("password") || "").toString();
+
+      try {
+        const response = await fetch("/api/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ username, password })
+        });
+
+        if (!response.ok) {
+          throw new Error("Nepravilno uporabnisko ime ali geslo.");
+        }
+
+        window.location.href = "/";
+      } catch (error) {
+        errorText.textContent = error.message || "Prijava ni uspela.";
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Prijava";
+      }
+    });
+  </script>
+</body>
+</html>
