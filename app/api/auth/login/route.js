@@ -7,15 +7,38 @@ import { prisma } from "@/lib/prisma";
 import { createUserSessionCookie } from "@/lib/auth";
 
 const schema = z.object({
-  email: z.string().email(),
+  identifier: z.string().min(1),
   password: z.string().min(1)
 });
+
+const ADMIN_USERNAME = (process.env.ADMIN_USERNAME || "admin").toLowerCase();
+const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || "admin@saromen.com").toLowerCase();
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "saromenadmin";
 
 export async function POST(request) {
   try {
     const body = await request.json();
     const parsed = schema.parse(body);
-    const email = parsed.email.toLowerCase().trim();
+    const identifier = parsed.identifier.toLowerCase().trim();
+    const isAdminIdentifier = identifier === ADMIN_USERNAME || identifier === ADMIN_EMAIL;
+
+    if (isAdminIdentifier && parsed.password === ADMIN_PASSWORD) {
+      const adminUser = {
+        id: "admin-local",
+        name: "Admin",
+        email: ADMIN_EMAIL,
+        role: "admin"
+      };
+      const response = NextResponse.json({ user: adminUser });
+      const sessionCookie = await createUserSessionCookie(adminUser);
+      response.cookies.set(sessionCookie.name, sessionCookie.value, sessionCookie.options);
+      return response;
+    }
+
+    const email = identifier.includes("@") ? identifier : "";
+    if (!email) {
+      return NextResponse.json({ message: "Napacni prijavni podatki." }, { status: 401 });
+    }
 
     let user;
     try {

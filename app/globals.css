@@ -23,6 +23,8 @@ body {
   margin: 0;
   color: var(--cream);
   background:
+    radial-gradient(circle at 80% 18%, rgba(200, 162, 111, 0.18), transparent 32%),
+    url("/assets/candle-bg.svg") center top / cover no-repeat fixed,
     radial-gradient(circle at 82% 18%, rgba(200, 162, 111, 0.2), transparent 34%),
     radial-gradient(circle at 12% 82%, rgba(200, 162, 111, 0.12), transparent 42%),
     var(--black);

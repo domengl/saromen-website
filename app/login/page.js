@@ -2,24 +2,63 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import LanguageSwitcher, { useLanguage } from "@/components/language-switcher";
+
+const TEXT = {
+  sl: {
+    title: "Prijava",
+    subtitle: "Prijavi se v SAROMEN profil za checkout in sledenje narocil.",
+    idPlaceholder: "Email ali username",
+    password: "Geslo",
+    submit: "Prijava",
+    processing: "Prijava v teku...",
+    failed: "Prijava ni uspela.",
+    noProfile: "Nimas profila?",
+    register: "Registracija"
+  },
+  en: {
+    title: "Login",
+    subtitle: "Login to your SAROMEN profile for checkout and tracking.",
+    idPlaceholder: "Email or username",
+    password: "Password",
+    submit: "Login",
+    processing: "Logging in...",
+    failed: "Login failed.",
+    noProfile: "No account?",
+    register: "Register"
+  },
+  de: {
+    title: "Anmelden",
+    subtitle: "Melde dich fur Checkout und Tracking im SAROMEN Profil an.",
+    idPlaceholder: "Email oder Benutzername",
+    password: "Passwort",
+    submit: "Anmelden",
+    processing: "Anmeldung lauft...",
+    failed: "Anmeldung fehlgeschlagen.",
+    noProfile: "Kein Konto?",
+    register: "Registrierung"
+  }
+};
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
+  const [lang, setLang] = useLanguage("sl");
+  const t = TEXT[lang] || TEXT.sl;
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
 
   async function onSubmit(event) {
     event.preventDefault();
-    setMessage("Prijava v teku...");
+    setMessage(t.processing);
     const response = await fetch("/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password })
+      body: JSON.stringify({ identifier, password })
     });
     const data = await response.json();
     if (!response.ok) {
-      setMessage(data.message || "Prijava ni uspela.");
+      setMessage(data.message || t.failed);
       return;
     }
     router.push("/");
@@ -29,20 +68,23 @@ export default function LoginPage() {
   return (
     <main className="mx-auto grid min-h-screen w-[min(460px,92%)] place-items-center py-10">
       <div className="panel w-full p-6">
-        <h1 className="display-font text-5xl text-[var(--gold)]">Prijava</h1>
-        <p className="mt-2 text-sm text-[#dbc8ad]">Prijavi se v SAROMEN profil za checkout in sledenje narocil.</p>
+        <div className="mb-4 flex justify-end">
+          <LanguageSwitcher lang={lang} setLang={setLang} />
+        </div>
+        <h1 className="display-font text-5xl text-[var(--gold)]">{t.title}</h1>
+        <p className="mt-2 text-sm text-[#dbc8ad]">{t.subtitle}</p>
         <form className="mt-5 grid gap-3" onSubmit={onSubmit}>
-          <input className="rounded-xl border border-[var(--line)] bg-[rgba(0,0,0,0.32)] p-3 text-sm" type="email" required placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-          <input className="rounded-xl border border-[var(--line)] bg-[rgba(0,0,0,0.32)] p-3 text-sm" type="password" required placeholder="Geslo" value={password} onChange={(e) => setPassword(e.target.value)} />
+          <input className="rounded-xl border border-[var(--line)] bg-[rgba(0,0,0,0.32)] p-3 text-sm" required placeholder={t.idPlaceholder} value={identifier} onChange={(e) => setIdentifier(e.target.value)} />
+          <input className="rounded-xl border border-[var(--line)] bg-[rgba(0,0,0,0.32)] p-3 text-sm" type="password" required placeholder={t.password} value={password} onChange={(e) => setPassword(e.target.value)} />
           <button className="pill-btn border-[var(--gold)] bg-[var(--gold)] text-[#25190f]" type="submit">
-            Prijava
+            {t.submit}
           </button>
         </form>
         <p className="mt-2 text-sm text-[#f0c189]">{message}</p>
         <p className="mt-4 text-sm text-[#dbc8ad]">
-          Nimas profila?{" "}
+          {t.noProfile}{" "}
           <a href="/register" className="text-[var(--gold)] underline">
-            Registracija
+            {t.register}
           </a>
         </p>
       </div>
