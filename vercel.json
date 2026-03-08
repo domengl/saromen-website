@@ -1,27 +1,23 @@
 {
-  "routes": [
+  "rewrites": [
     {
-      "src": "/login",
-      "dest": "/login.html"
+      "source": "/login",
+      "destination": "/login.html"
     },
     {
-      "src": "/((?!login$|api/).*)",
-      "continue": true,
+      "source": "/api/:path*",
+      "destination": "/api/:path*"
+    },
+    {
+      "source": "/:path*",
       "missing": [
         {
           "type": "cookie",
           "key": "saromen_auth",
           "value": "saromen_private_access_v1"
         }
-      ]
-    },
-    {
-      "src": "/((?!login$|api/).*)",
-      "dest": "/login"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
+      ],
+      "destination": "/login"
     }
   ]
 }
