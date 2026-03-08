@@ -1,59 +1,76 @@
-# SAROMEN Website (Next.js + Tailwind + Prisma + Stripe)
+# SAROMEN Website
 
 ## Stack
 - Next.js (App Router)
 - Tailwind CSS
-- Prisma ORM (SQLite by default)
+- Prisma ORM (SQLite default)
 - Stripe checkout route
-- Cookie auth (register/login/profile)
-- Admin panel (admin cookie session)
+- Cookie auth (login/register/profile/admin)
 - Global Basic Auth lock (`saradomen / saradomen`)
+- Google Sheets sync (orders, inventory, capacity, products, coupons, special offers)
 
-## 1) Local setup
+## Local setup
 ```powershell
 cd C:\Users\Domen\Documents\web-projects\saromen-website
 copy .env.example .env
-```
-
-Uredi `.env` in nastavi vsaj:
-- `AUTH_SECRET`
-- `DATABASE_URL` (za lokalno lahko ostane `file:./prisma/dev.db`)
-- `STRIPE_SECRET_KEY` in `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` (test keys)
-
-## 2) Install + Prisma
-```powershell
 npm install
 npm run prisma:generate
 npm run prisma:migrate -- --name init
-```
-
-## 3) Run dev server
-```powershell
 npm run dev
 ```
 
-Odpri:
-- `http://localhost:3000`
-
-## 4) Auth & Admin
-- Basic auth za celo stran:
+## Admin access
+- Website lock:
   - username: `saradomen`
   - password: `saradomen`
-- Admin login v `/admin`:
-  - username: `admin`
-  - password: `saromenadmin`
+- Admin user login (normal login form `/login`):
+  - username: `admin` or `admin@saromen.com`
+  - password: value from `ADMIN_PASSWORD`
+- Admin page: `/admin`
 
-## 5) Deploy (GitHub + Vercel)
-Push na `main` in v Vercelu nastavi iste env spremenljivke kot lokalno.
+## Google Sheets integration
+Set in `.env`:
+- `GOOGLE_SHEETS_SPREADSHEET_ID`
+- `GOOGLE_SERVICE_ACCOUNT_EMAIL`
+- `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY` (escaped `\n` format)
+or use:
+- `GOOGLE_SERVICE_ACCOUNT_JSON`
 
-Minimalni production env:
-- `AUTH_SECRET`
-- `DATABASE_URL` (production DB)
-- `BASIC_AUTH_USERNAME`
-- `BASIC_AUTH_PASSWORD`
-- `STRIPE_SECRET_KEY`
-- `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
+Optional tab names:
+- `GSHEET_TAB_ORDERS`
+- `GSHEET_TAB_INVENTORY`
+- `GSHEET_TAB_CAPACITY`
+- `GSHEET_TAB_PRODUCTS`
+- `GSHEET_TAB_COUPONS`
+- `GSHEET_TAB_SPECIAL_OFFERS`
 
-Opcijsko:
-- `RESEND_API_KEY`
-- `ORDER_FROM_EMAIL`
+### Expected tab columns
+- `Products`:
+  - `slug,name,category,scent,description,price,stock,etaDays,salePercent,isTop,isNew,active,updatedAt`
+- `Coupons`:
+  - `code,percent,minAmount,active,updatedAt`
+- `SpecialOffers`:
+  - `id,title,description,percent,active,startAt,endAt,updatedAt`
+- `Orders`:
+  - `orderNumber,createdAt,status,customerEmail,subtotal,discount,shipping,total,couponCode,voucherCode,trackingNumber,invoiceNumber,itemsJson,updatedAt,note`
+- `Inventory`:
+  - `sku,name,currentStock,reservedStock,etaDays,lastOrder,lastUpdated`
+- `Capacity`:
+  - `sku,name,maxPlanned,currentReserved,available,lastOrder,lastUpdated`
+
+Headers are auto-created by API if missing.
+
+## New admin endpoints
+- `POST /api/admin/sheets/sync` -> sync products + coupons to sheets
+- `GET/POST /api/admin/special-offers` -> admin-only special offers
+- `POST /api/admin/orders/status` -> update order status + write status to sheets
+
+## Customer-facing endpoints
+- `GET /api/products` -> products (prefers Google Sheets)
+- `GET /api/coupons` -> coupons (prefers Google Sheets)
+- `GET /api/special-offers` -> active special offers
+- `POST /api/checkout` -> creates order + writes order/inventory/capacity to sheets
+
+## Deploy
+Push `main` -> Vercel.
+Set same env vars in Vercel as local.

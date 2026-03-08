@@ -5,6 +5,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { isAdminRequest } from "@/lib/admin";
 import { getProducts } from "@/lib/store";
+import { upsertProductToGoogleSheets } from "@/lib/google-sync";
 
 const schema = z.object({
   name: z.string().min(2),
@@ -42,8 +43,27 @@ export async function POST(request) {
     const parsed = schema.parse(body);
     const slug = `${slugify(parsed.name)}-${Date.now()}`;
 
-    const item = await prisma.product.create({
-      data: {
+    let item;
+    try {
+      item = await prisma.product.create({
+        data: {
+          slug,
+          name: parsed.name,
+          category: parsed.category,
+          scent: parsed.scent,
+          description: parsed.description,
+          price: parsed.price,
+          stock: parsed.stock,
+          etaDays: parsed.etaDays,
+          salePercent: parsed.salePercent,
+          isTop: Boolean(parsed.isTop),
+          isNew: Boolean(parsed.isNew),
+          active: true
+        }
+      });
+    } catch {
+      item = {
+        id: `sheet-${Date.now()}`,
         slug,
         name: parsed.name,
         category: parsed.category,
@@ -56,8 +76,10 @@ export async function POST(request) {
         isTop: Boolean(parsed.isTop),
         isNew: Boolean(parsed.isNew),
         active: true
-      }
-    });
+      };
+    }
+
+    await upsertProductToGoogleSheets(item).catch(() => {});
 
     return NextResponse.json({ item });
   } catch {

@@ -8,12 +8,18 @@ import { getCoupons } from "@/lib/store";
 import { getUserSession } from "@/lib/auth";
 import { sendOrderEmail } from "@/lib/email";
 import { hashVoucherCode, validateSignedVoucherCode } from "@/lib/vouchers";
+import {
+  appendOrderToGoogleSheets,
+  applyOrderEffectsToGoogleSheets,
+  updateOrderStatusInGoogleSheets
+} from "@/lib/google-sync";
 
 const schema = z.object({
   items: z
     .array(
       z.object({
         productId: z.string().nullable().optional(),
+        productSlug: z.string().nullable().optional(),
         name: z.string().min(1),
         scent: z.string().default(""),
         quantity: z.number().int().min(1),
@@ -116,6 +122,27 @@ export async function POST(request) {
       dbOrder = null;
     }
 
+    await appendOrderToGoogleSheets({
+      orderNumber,
+      createdAt: new Date(now).toISOString(),
+      status: "PENDING",
+      customerEmail: parsed.customerEmail,
+      subtotal,
+      discount,
+      shipping,
+      total,
+      couponCode: coupon?.code || "",
+      voucherCode: voucherCode || "",
+      trackingNumber,
+      invoiceNumber,
+      items: parsed.items
+    }).catch(() => {});
+
+    await applyOrderEffectsToGoogleSheets({
+      orderNumber,
+      items: parsed.items
+    }).catch(() => {});
+
     const stripeKey = process.env.STRIPE_SECRET_KEY;
     if (voucher && dbOrder) {
       await prisma.giftVoucher.updateMany({
@@ -189,6 +216,11 @@ export async function POST(request) {
     if (dbOrder) {
       await prisma.order.update({ where: { id: dbOrder.id }, data: { status: "PAID" } });
     }
+
+    await updateOrderStatusInGoogleSheets({
+      orderNumber,
+      status: "PAID"
+    }).catch(() => {});
 
     return NextResponse.json({
       demo: true,

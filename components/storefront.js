@@ -174,27 +174,14 @@ function effectivePrice(product) {
   return product.price * (1 - product.salePercent / 100);
 }
 
-function seasonDiscount(season) {
-  if (season === "blackfriday") return 15;
-  if (season === "halloween") return 8;
-  return 0;
-}
-
-function detectSeason() {
-  const month = new Date().getMonth() + 1;
-  if (month === 11) return "blackfriday";
-  if (month === 10) return "halloween";
-  return "classic";
-}
-
 export default function Storefront({ shopOnly = false, preset = "all" }) {
   const [lang, setLang] = useLanguage("sl");
   const t = TRANSLATIONS[lang] || TRANSLATIONS.sl;
   const [products, setProducts] = useState([]);
   const [coupons, setCoupons] = useState([]);
+  const [offers, setOffers] = useState([]);
   const [category, setCategory] = useState("all");
   const [search, setSearch] = useState("");
-  const [season, setSeason] = useState("classic");
   const [cartOpen, setCartOpen] = useState(false);
   const [cart, setCart] = useState([]);
   const [couponCode, setCouponCode] = useState("");
@@ -221,22 +208,20 @@ export default function Storefront({ shopOnly = false, preset = "all" }) {
   }, [customPreview.logoUrl]);
 
   useEffect(() => {
-    const stored = localStorage.getItem("saromen_season");
-    setSeason(stored || detectSeason());
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem("saromen_season", season);
-  }, [season]);
-
-  useEffect(() => {
     const load = async () => {
-      const [productsRes, couponsRes, meRes] = await Promise.all([fetch("/api/products"), fetch("/api/coupons"), fetch("/api/auth/me")]);
+      const [productsRes, couponsRes, offersRes, meRes] = await Promise.all([
+        fetch("/api/products"),
+        fetch("/api/coupons"),
+        fetch("/api/special-offers"),
+        fetch("/api/auth/me")
+      ]);
       const productsJson = await productsRes.json();
       const couponsJson = await couponsRes.json();
+      const offersJson = await offersRes.json();
       const meJson = await meRes.json();
       setProducts(productsJson.items || []);
       setCoupons(couponsJson.items || []);
+      setOffers(offersJson.items || []);
       setUser(meJson.user || null);
     };
     load();
@@ -262,7 +247,10 @@ export default function Storefront({ shopOnly = false, preset = "all" }) {
       }),
     [category, presetProducts, search]
   );
-  const seasonExtra = useMemo(() => seasonDiscount(season), [season]);
+  const seasonExtra = useMemo(() => {
+    if (!offers.length) return 0;
+    return offers.reduce((max, item) => Math.max(max, Number(item.percent || 0)), 0);
+  }, [offers]);
   const shopHeading = preset === "top" ? t.navTopHits : preset === "discount" ? t.navDiscounts : preset === "new" ? t.navNews : t.navShop;
 
   const totals = useMemo(() => {
@@ -291,7 +279,7 @@ export default function Storefront({ shopOnly = false, preset = "all" }) {
     if (preorder && !product.etaDays) return;
 
     const finalUnitPrice = Number((effectivePrice(product) * (1 - seasonExtra / 100)).toFixed(2));
-    const lineId = preorder ? `catalog-${product.id}-pre-${season}` : `catalog-${product.id}-stock-${season}`;
+    const lineId = preorder ? `catalog-${product.id}-pre-${seasonExtra}` : `catalog-${product.id}-stock-${seasonExtra}`;
     setCart((prev) => {
       const existing = prev.find((item) => item.id === lineId);
       if (existing) {
@@ -303,6 +291,7 @@ export default function Storefront({ shopOnly = false, preset = "all" }) {
           id: lineId,
           type: "catalog",
           productId: product.id,
+          productSlug: product.slug || null,
           name: preorder ? `${product.name} (prednarocilo)` : product.name,
           scent: product.scent,
           quantity: 1,
@@ -574,15 +563,12 @@ export default function Storefront({ shopOnly = false, preset = "all" }) {
         <div className="mx-auto flex w-[min(1180px,92%)] flex-wrap items-center justify-between gap-2 text-xs uppercase tracking-[0.1em] text-[#f2d2a4]">
           <span>{t.navDeals}</span>
           <div className="flex flex-wrap gap-2">
-            <button className={`pill-btn ${season === "classic" ? "border-[var(--gold)] text-[var(--gold)]" : ""}`} onClick={() => setSeason("classic")}>
-              {t.classic}
-            </button>
-            <button className={`pill-btn ${season === "blackfriday" ? "border-[var(--gold)] text-[var(--gold)]" : ""}`} onClick={() => setSeason("blackfriday")}>
-              {t.blackFriday}
-            </button>
-            <button className={`pill-btn ${season === "halloween" ? "border-[var(--gold)] text-[var(--gold)]" : ""}`} onClick={() => setSeason("halloween")}>
-              {t.halloween}
-            </button>
+            {offers.length === 0 ? <span className="pill-btn">Brez aktivnih ugodnosti</span> : null}
+            {offers.map((offer) => (
+              <span key={offer.id} className="pill-btn border-[var(--gold)] text-[var(--gold)]">
+                {offer.title} -{offer.percent}%
+              </span>
+            ))}
           </div>
         </div>
       </div>

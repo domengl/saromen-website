@@ -5,6 +5,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { isAdminRequest } from "@/lib/admin";
 import { getCoupons } from "@/lib/store";
+import { upsertCouponToGoogleSheets } from "@/lib/google-sync";
 
 const schema = z.object({
   code: z.string().min(3),
@@ -28,11 +29,18 @@ export async function POST(request) {
     const parsed = schema.parse(body);
     const code = parsed.code.trim().toUpperCase();
 
-    const item = await prisma.coupon.upsert({
-      where: { code },
-      update: { percent: parsed.percent, minAmount: parsed.minAmount, active: true },
-      create: { code, percent: parsed.percent, minAmount: parsed.minAmount, active: true }
-    });
+    let item;
+    try {
+      item = await prisma.coupon.upsert({
+        where: { code },
+        update: { percent: parsed.percent, minAmount: parsed.minAmount, active: true },
+        create: { code, percent: parsed.percent, minAmount: parsed.minAmount, active: true }
+      });
+    } catch {
+      item = { id: `sheet-coupon-${Date.now()}`, code, percent: parsed.percent, minAmount: parsed.minAmount, active: true };
+    }
+
+    await upsertCouponToGoogleSheets(item).catch(() => {});
 
     return NextResponse.json({ item });
   } catch {
