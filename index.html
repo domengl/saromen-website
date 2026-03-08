@@ -3,27 +3,34 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SAROMEN | Luxury Candles</title>
-  <meta name="description" content="SAROMEN premium candle brand - elegantne svece za sodoben dom." />
+  <title>SAROMEN | Luxury Candle Store</title>
+  <meta name="description" content="Premium candle store SAROMEN - top hiti, popusti, novosti, personalizirane svece in elegantna izkusnja nakupa." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;700&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
   <div class="site-notice" role="note">
-    TESTNA STRAN - pravno obvestilo: vsebine so demonstracijske in ne predstavljajo zavezujoce ponudbe ali dejanskega nakupa.
+    TESTNA STRAN - demonstracijski projekt. Prijava, checkout, admin, racuni in email tok so trenutno demo implementacija.
   </div>
+
   <header class="site-header">
     <div class="header-inner">
       <a class="logo" href="#home">SAROMEN</a>
       <nav class="main-nav" aria-label="Glavna navigacija">
-        <a href="#home">Home</a>
-        <a href="#shop">Shop</a>
-        <a href="#about">About</a>
-        <a href="#contact">Contact</a>
+        <a href="#top-hiti">Top Hiti</a>
+        <a href="#popusti">Popusti</a>
+        <a href="#novosti">Novosti</a>
+        <a href="#blog">Blog</a>
+        <a href="#kontakt">Kontakt</a>
       </nav>
-      <button class="cart-toggle" id="openCartBtn" type="button">Kosarica (0)</button>
+      <div class="header-actions">
+        <button class="mini-btn" id="authBtn" type="button">Prijava</button>
+        <button class="mini-btn" id="profileBtn" type="button" hidden>Profil</button>
+        <button class="mini-btn" id="adminBtn" type="button">Admin</button>
+        <button class="cart-toggle" id="openCartBtn" type="button">Kosarica (0)</button>
+      </div>
     </div>
   </header>
 
@@ -32,51 +39,170 @@
       <div class="hero-content">
         <img class="brand-logo" src="./assets/saromen-logo.png" alt="SAROMEN Candle Studio logo" />
         <span class="eyebrow">Luxury Candle Brand</span>
-        <h1>Atmosfera, ujeta v premium sveci.</h1>
+        <h1>Svece kot atmosfera, dizajn in osebna zgodba.</h1>
         <p>
-          SAROMEN ustvarja elegantne disavne svece za moderne domove. Ciste linije, topel sijaj in prefinjene note za vecerne rituale.
+          SAROMEN zdruzuje premium vonje, minimalen luksuz in sodobno estetiko doma. Od top hitov do personaliziranih kosov z napisom ali logotipom.
         </p>
         <div class="hero-actions">
-          <a class="btn btn-primary" href="#shop">Poglej kolekcijo</a>
-          <a class="btn btn-outline" href="#about">Zgodba znamke</a>
+          <a class="btn btn-primary" href="#shop">Nakupuj kolekcijo</a>
+          <a class="btn btn-outline" href="#about">Zgodba Sara + Domen</a>
         </div>
       </div>
+      <div class="hero-side">
+        <div class="hero-stat">
+          <strong>24h</strong>
+          <span>Povprecen odziv podpore</span>
+        </div>
+        <div class="hero-stat">
+          <strong>50+ EUR</strong>
+          <span>Brezplacna postnina</span>
+        </div>
+        <div class="hero-stat">
+          <strong>3-7 dni</strong>
+          <span>Rok izdelave personalizacije</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section container" id="top-hiti">
+      <h2>Top Hiti</h2>
+      <p class="section-intro">Najbolj prodajani kosi z najvisjo oceno kupcev.</p>
+      <div class="product-grid" id="topHitsGrid"></div>
+    </section>
+
+    <section class="section container" id="popusti">
+      <h2>Popusti</h2>
+      <p class="section-intro">Aktualni popusti, kuponi in limitirane akcije.</p>
+      <div class="product-grid" id="discountGrid"></div>
+    </section>
+
+    <section class="section container" id="novosti">
+      <h2>Novosti</h2>
+      <p class="section-intro">Sveze kolekcije, sezonski vonji in nova embalaza.</p>
+      <div class="product-grid" id="newGrid"></div>
     </section>
 
     <section class="section container" id="shop">
-      <h2>Shop</h2>
+      <h2>Seznam Svec</h2>
+      <p class="section-intro">Razlicna podrocja: disavne, dekorativne, modni dodatek, darilne in personalizirane.</p>
+      <div class="category-filters" id="categoryFilters"></div>
+      <div class="product-grid" id="allProductsGrid"></div>
+    </section>
+
+    <section class="section container" id="personalized">
+      <h2>Personalizirane Svece</h2>
       <p class="section-intro">
-        Testni izdelki za zacetek trgovine. Kasneje bova te kartice povezala na pravi backend in placilo.
+        Dodaj napis, izberi vonj, nalozi logo in ustvari unikatno sveco za dom, darilo ali podjetje.
       </p>
-      <div class="product-grid" id="productGrid"></div>
+      <div class="custom-layout">
+        <form class="custom-form" id="personalForm">
+          <label for="personalBase">Tip svece</label>
+          <select id="personalBase" required>
+            <option value="Signature Jar">Signature Jar</option>
+            <option value="Wedding Edition">Wedding Edition</option>
+            <option value="Corporate Gift">Corporate Gift</option>
+          </select>
+
+          <label for="personalText">Napis na sveci</label>
+          <input id="personalText" type="text" maxlength="42" placeholder="Npr. Sara & Domen 2026" required />
+
+          <label for="personalScent">Vonj</label>
+          <input id="personalScent" type="text" placeholder="Npr. Amber Vanilla" required />
+
+          <label for="personalLogo">Logo (opcija)</label>
+          <input id="personalLogo" type="file" accept=".png,.jpg,.jpeg,.svg" />
+
+          <label for="personalQty">Kolicina</label>
+          <input id="personalQty" type="number" min="1" max="30" value="1" required />
+
+          <button class="btn btn-primary" type="submit">Dodaj personalizirano v kosarico</button>
+          <p class="form-message" id="personalMessage"></p>
+        </form>
+
+        <div class="custom-card">
+          <h3>Kako deluje</h3>
+          <ul>
+            <li>Vpis napisa in izbira vonja.</li>
+            <li>Po zelji dodas logo.</li>
+            <li>Rok izdelave je 3-7 dni.</li>
+            <li>Pred izdelavo prejmes predogled po emailu.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="section container" id="knowledge">
+      <h2>Svece in Lifestyle</h2>
+      <div class="knowledge-grid">
+        <article class="knowledge-card">
+          <h3>Vonji in obcutek prostora</h3>
+          <p>
+            Topli toni (amber, vanilla, musk) dajejo vecerni premium ambient, svezi toni (tea, citrus) pa ustvarijo cisto dnevno energijo.
+          </p>
+        </article>
+        <article class="knowledge-card">
+          <h3>Svece kot modni dodatek</h3>
+          <p>
+            Elegantna sveca je vizualni statement na polici, klubski mizi ali ob knjigah. Embalaza postane del interier stila.
+          </p>
+        </article>
+        <article class="knowledge-card">
+          <h3>Kako podaljsati zivljenjsko dobo</h3>
+          <p>
+            Prvi burn naj traja 2-3 ure, stenj pred vsakim prizigom skrajsaj na 5 mm in sveco postavi stran od prepiha.
+          </p>
+        </article>
+      </div>
     </section>
 
     <section class="section container" id="about">
-      <h2>About</h2>
-      <p class="section-intro">
-        SAROMEN je premium candle brand, zgrajen okoli ideje miru, estetike in topline. Vsak kos je ustvarjen za luksuzen ambient.
-      </p>
-      <div class="about-card">
+      <h2>O Nas: Sara in Domen</h2>
+      <div class="about-story">
         <p>
-          Uporabljamo kakovostne voske in sodobne disavne profile. Vizualna smer je minimalna, elegantna in pripravljena za premium pozicioniranje znamke.
+          Sara je oblikovalka z obcutkom za estetiko prostora, Domen pa podjetnik, ki obozuje strukturo in gradnjo znamk. Iz njune skupne ljubezni do topline doma je nastal SAROMEN.
+        </p>
+        <p>
+          Kar se je zacelo kot vecerni hobi in testiranje voskov v kuhinji, je preraslo v candle studio, kjer vsak produkt zdruzuje dizajn, kakovost vonja in poslovno vizijo.
+        </p>
+        <p>
+          Danes gradita premium brand, ki povezuje emocijo, interier in sodobno spletno izkusnjo nakupa.
         </p>
       </div>
     </section>
 
-    <section class="section container" id="contact">
-      <h2>Contact</h2>
-      <p class="section-intro">
-        Za wholesale, custom kolekcije ali sodelovanja nas kontaktiraj.
-      </p>
+    <section class="section container" id="blog">
+      <h2>Blog</h2>
+      <div class="blog-grid">
+        <article class="blog-card">
+          <h3>5 nacinov kako ustvariti luxury ambient doma</h3>
+          <p>Prakticni vodi za elegantno osvetlitev, vonje in postavitev dekorja.</p>
+        </article>
+        <article class="blog-card">
+          <h3>Vodnik po vonjih: kateri je pravi zate</h3>
+          <p>Primerjava amber, fig, white tea, cedar in seasonal blend profilov.</p>
+        </article>
+        <article class="blog-card">
+          <h3>Personalizirana sveca kot darilo</h3>
+          <p>Kako izbrati napis, vonj in embalao za poroke, rojstne dneve in podjetja.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section container" id="kontakt">
+      <h2>Kontakt</h2>
+      <p class="section-intro">Podpora, wholesale, sledenje posiljkam in sodelovanja.</p>
       <div class="contact-grid">
         <div class="contact-card">
           <p><strong>Email:</strong> hello@saromen.com</p>
+          <p><strong>Podpora:</strong> support@saromen.com</p>
         </div>
         <div class="contact-card">
           <p><strong>Instagram:</strong> @saromen.candles</p>
+          <p><strong>Blog:</strong> saromen.com/#blog</p>
         </div>
         <div class="contact-card">
-          <p><strong>Lokacija:</strong> Slovenia / EU shipping soon</p>
+          <p><strong>Lokacija:</strong> Slovenia</p>
+          <p><strong>Dostava:</strong> SI + EU (demo mode)</p>
         </div>
       </div>
     </section>
@@ -94,16 +220,164 @@
       <h3 class="cart-title">Kosarica</h3>
       <button class="close-cart" id="closeCartBtn" type="button" aria-label="Zapri kosarico">x</button>
     </div>
+
     <ul class="cart-items" id="cartItems"></ul>
-    <div class="cart-empty" id="cartEmpty">Kosarica je trenutno prazna.</div>
-    <div class="cart-footer">
-      <div class="total-row">
-        <span>Skupaj</span>
-        <strong id="cartTotal">EUR 0.00</strong>
+    <div class="cart-empty" id="cartEmpty">Kosarica je prazna.</div>
+
+    <div class="coupon-box">
+      <label for="couponInput">Kupon</label>
+      <div class="coupon-row">
+        <input id="couponInput" type="text" placeholder="Npr. SARA10" />
+        <button id="applyCouponBtn" type="button">Uporabi</button>
       </div>
-      <button class="checkout-btn" id="checkoutBtn" type="button" disabled>Test checkout</button>
+      <p class="coupon-info" id="couponInfo"></p>
+    </div>
+
+    <div class="cart-footer">
+      <div class="total-row"><span>Vmesni znesek</span><strong id="subtotalAmount">EUR 0.00</strong></div>
+      <div class="total-row"><span>Popust</span><strong id="discountAmount">- EUR 0.00</strong></div>
+      <div class="total-row"><span>Postnina</span><strong id="shippingAmount">EUR 0.00</strong></div>
+      <p class="shipping-rule">Brezplacna postnina nad EUR 50.00.</p>
+      <div class="total-row total-main"><span>Skupaj</span><strong id="totalAmount">EUR 0.00</strong></div>
+      <div class="cart-actions">
+        <button class="secondary-btn" id="clearCartBtn" type="button">Pocisti kosarico</button>
+        <button class="checkout-btn" id="checkoutBtn" type="button" disabled>Zakljuci narocilo</button>
+      </div>
+      <div class="order-result" id="orderResult" hidden></div>
     </div>
   </aside>
+
+  <div class="modal" id="authModal" aria-hidden="true">
+    <div class="modal-card">
+      <button class="modal-close" id="closeAuthModal" type="button">x</button>
+      <h3>Prijava Profilov</h3>
+      <div class="auth-tabs">
+        <button class="tab-btn active" id="showLoginTab" type="button">Prijava</button>
+        <button class="tab-btn" id="showRegisterTab" type="button">Registracija</button>
+      </div>
+
+      <form id="loginForm">
+        <label for="loginEmail">Email</label>
+        <input id="loginEmail" type="email" required />
+        <label for="loginPassword">Geslo</label>
+        <input id="loginPassword" type="password" required />
+        <button class="btn btn-primary full-width" type="submit">Prijava</button>
+        <p class="form-message" id="loginMessage"></p>
+      </form>
+
+      <form id="registerForm" hidden>
+        <label for="registerName">Ime</label>
+        <input id="registerName" type="text" required />
+        <label for="registerEmail">Email</label>
+        <input id="registerEmail" type="email" required />
+        <label for="registerPassword">Geslo</label>
+        <input id="registerPassword" type="password" minlength="6" required />
+        <label for="registerPasswordConfirm">Potrdi geslo</label>
+        <input id="registerPasswordConfirm" type="password" minlength="6" required />
+        <button class="btn btn-primary full-width" type="submit">Ustvari profil</button>
+        <p class="form-message" id="registerMessage"></p>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal" id="profileModal" aria-hidden="true">
+    <div class="modal-card">
+      <button class="modal-close" id="closeProfileModal" type="button">x</button>
+      <h3>Moj Profil</h3>
+      <p><strong>Ime:</strong> <span id="profileName">-</span></p>
+      <p><strong>Email:</strong> <span id="profileEmail">-</span></p>
+
+      <h4>Zadnja narocila</h4>
+      <ul class="list-box" id="profileOrders"></ul>
+
+      <h4>Email obvestila (demo)</h4>
+      <ul class="list-box" id="profileEmails"></ul>
+
+      <button class="secondary-btn full-width" id="logoutBtn" type="button">Odjava</button>
+    </div>
+  </div>
+
+  <div class="modal" id="adminModal" aria-hidden="true">
+    <div class="modal-card admin-card">
+      <button class="modal-close" id="closeAdminModal" type="button">x</button>
+      <h3>Admin Center</h3>
+
+      <div id="adminLoginView">
+        <p class="admin-note">Admin credentials (demo): admin / saromenadmin</p>
+        <form id="adminLoginForm">
+          <label for="adminUsername">Uporabnisko ime</label>
+          <input id="adminUsername" type="text" required />
+          <label for="adminPassword">Geslo</label>
+          <input id="adminPassword" type="password" required />
+          <button class="btn btn-primary full-width" type="submit">Vstop v admin</button>
+          <p class="form-message" id="adminMessage"></p>
+        </form>
+      </div>
+
+      <div id="adminPanelView" hidden>
+        <div class="admin-grid">
+          <section>
+            <h4>Dodaj izdelek</h4>
+            <form id="adminProductForm">
+              <label for="adminProductName">Naziv</label>
+              <input id="adminProductName" type="text" required />
+
+              <label for="adminProductCategory">Kategorija</label>
+              <input id="adminProductCategory" type="text" placeholder="Disavne" required />
+
+              <label for="adminProductScent">Vonj</label>
+              <input id="adminProductScent" type="text" required />
+
+              <label for="adminProductPrice">Cena</label>
+              <input id="adminProductPrice" type="number" min="1" step="0.01" required />
+
+              <label for="adminProductStock">Zaloga</label>
+              <input id="adminProductStock" type="number" min="0" step="1" required />
+
+              <label for="adminProductEta">Dobava (dni, ce ni zaloge)</label>
+              <input id="adminProductEta" type="number" min="1" step="1" value="5" required />
+
+              <label for="adminProductSale">Popust % (0-80)</label>
+              <input id="adminProductSale" type="number" min="0" max="80" step="1" value="0" />
+
+              <div class="inline-checks">
+                <label><input id="adminProductTop" type="checkbox" /> Top hit</label>
+                <label><input id="adminProductNew" type="checkbox" /> Novost</label>
+              </div>
+
+              <button class="btn btn-primary full-width" type="submit">Dodaj izdelek</button>
+              <p class="form-message" id="adminProductMessage"></p>
+            </form>
+          </section>
+
+          <section>
+            <h4>Dodaj kupon</h4>
+            <form id="adminCouponForm">
+              <label for="adminCouponCode">Koda</label>
+              <input id="adminCouponCode" type="text" required />
+
+              <label for="adminCouponPercent">Popust %</label>
+              <input id="adminCouponPercent" type="number" min="1" max="80" step="1" required />
+
+              <label for="adminCouponMin">Minimalni znesek</label>
+              <input id="adminCouponMin" type="number" min="0" step="0.01" value="0" required />
+
+              <button class="btn btn-primary full-width" type="submit">Dodaj kupon</button>
+              <p class="form-message" id="adminCouponMessage"></p>
+            </form>
+
+            <h4>Aktivni kuponi</h4>
+            <ul class="list-box" id="adminCouponsList"></ul>
+          </section>
+        </div>
+
+        <h4>Aktivni izdelki</h4>
+        <ul class="list-box" id="adminProductsList"></ul>
+
+        <button class="secondary-btn full-width" id="adminLogoutBtn" type="button">Zapri admin sejo</button>
+      </div>
+    </div>
+  </div>
 
   <script src="./script.js" defer></script>
 </body>
