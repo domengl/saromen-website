@@ -516,18 +516,18 @@ export default function Storefront({ shopOnly = false, preset = "all" }) {
   }
 
   function PaymentLogos({ compact = false }) {
-    const cardSize = compact ? "h-8 min-w-[70px] px-2 text-[10px]" : "h-10 min-w-[94px] px-3 text-xs";
+    const cardSize = compact ? "h-8 min-w-[90px] px-2 text-[10px]" : "h-10 min-w-[120px] px-3 text-xs";
     return (
       <div className={`flex flex-wrap gap-2 ${compact ? "" : "mt-3"}`}>
-        <span className={`inline-flex items-center justify-center rounded-full border border-[var(--line)] bg-[#17130f] font-semibold tracking-[0.08em] ${cardSize}`}>
-          VISA
+        <span className={`inline-flex items-center justify-center rounded-full border border-[var(--line)] bg-[#111622] font-bold tracking-[0.1em] text-[#9fc2ff] ${cardSize}`}>
+          Visa
         </span>
-        <span className={`inline-flex items-center gap-1 rounded-full border border-[var(--line)] bg-[#17130f] font-semibold tracking-[0.05em] ${cardSize}`}>
-          <svg viewBox="0 0 24 12" className="h-3 w-5" aria-hidden="true">
-            <circle cx="9" cy="6" r="4.8" fill="#dd4b39" />
-            <circle cx="15" cy="6" r="4.8" fill="#f4b942" />
+        <span className={`inline-flex items-center gap-1 rounded-full border border-[var(--line)] bg-[#1a130e] font-semibold tracking-[0.05em] ${cardSize}`}>
+          <svg viewBox="0 0 28 16" className="h-3 w-6" aria-hidden="true">
+            <circle cx="11" cy="8" r="6" fill="#eb5548" />
+            <circle cx="17" cy="8" r="6" fill="#f3b54a" />
           </svg>
-          MC
+          Mastercard
         </span>
         <span className={`inline-flex items-center gap-1 rounded-full border border-[var(--line)] bg-[#17130f] font-semibold tracking-[0.05em] ${cardSize}`}>
           <svg viewBox="0 0 24 24" className="h-3 w-3 fill-[#5ea7ff]" aria-hidden="true">
@@ -604,6 +604,9 @@ export default function Storefront({ shopOnly = false, preset = "all" }) {
                 {t.login}
               </a>
             )}
+            <button className="pill-btn border-[var(--gold)] text-[var(--gold)]" onClick={() => setCartOpen(true)}>
+              {t.cart} ({cartCount})
+            </button>
           </div>
         </div>
       </header>
@@ -621,13 +624,6 @@ export default function Storefront({ shopOnly = false, preset = "all" }) {
           </div>
         </div>
       </div>
-
-      <button
-        className="fixed right-3 top-1/2 z-30 -translate-y-1/2 rounded-full border border-[var(--gold)] bg-[#1a140f] px-3 py-2 text-xs font-semibold text-[var(--gold)] shadow-[0_12px_30px_rgba(0,0,0,0.35)] transition hover:bg-[#241a13] lg:right-5"
-        onClick={() => setCartOpen(true)}
-      >
-        {t.cart} ({cartCount})
-      </button>
 
       {!shopOnly ? (
         <>
@@ -721,32 +717,7 @@ export default function Storefront({ shopOnly = false, preset = "all" }) {
             </article>
           ))}
         </div>
-        {openedProduct ? (
-          <article className="panel mt-5 grid gap-4 p-5 md:grid-cols-[300px_1fr]">
-            <img src={productImage(openedProduct)} alt={openedProduct.name} className="aspect-square w-full rounded-2xl border border-[var(--line)] object-cover" />
-            <div>
-              <p className="text-xs uppercase tracking-[0.1em] text-[#f0c189]">{categoryLabel(openedProduct.category, lang)}</p>
-              <h3 className="display-font mt-2 text-5xl text-[#fff8ec]">{openedProduct.name}</h3>
-              <p className="mt-1 text-sm text-[#e0ccb1]">{openedProduct.scent}</p>
-              <p className="mt-4 text-sm leading-8 text-[#dbc8ad]">{openedProduct.description}</p>
-              <div className="mt-4 grid gap-2 text-sm text-[#dbc8ad] md:grid-cols-3">
-                <p className="rounded-xl border border-[var(--line)] px-3 py-2">Cena: {formatPrice(Number((effectivePrice(openedProduct) * (1 - seasonExtra / 100)).toFixed(2)))}</p>
-                <p className="rounded-xl border border-[var(--line)] px-3 py-2">{Number(openedProduct.stock || 0) > 0 ? t.stock(openedProduct.stock) : t.outOfStock(openedProduct.etaDays)}</p>
-                <p className="rounded-xl border border-[var(--line)] px-3 py-2">Rocna izdelava premium voska</p>
-              </div>
-              <div className="mt-4 flex flex-wrap gap-2">
-                <button className="pill-btn border-[var(--gold)] bg-[var(--gold)] text-[#25190f]" onClick={() => addCatalogProduct(openedProduct)}>
-                  {t.addToCart}
-                </button>
-                <button className="pill-btn" onClick={() => setOpenedProduct(null)}>
-                  Zapri
-                </button>
-              </div>
-            </div>
-          </article>
-        ) : (
-          <p className="mt-4 text-xs uppercase tracking-[0.1em] text-[#d8c0a1]">Klikni &quot;Odpri izdelek&quot; za podrobnosti in opis spodaj.</p>
-        )}
+        <p className="mt-4 text-xs uppercase tracking-[0.1em] text-[#d8c0a1]">Klikni &quot;Odpri izdelek&quot; za podrobnosti.</p>
       </section>
 
       <section id="personalized" className="mx-auto w-[min(1180px,92%)] py-12">
@@ -946,6 +917,50 @@ export default function Storefront({ shopOnly = false, preset = "all" }) {
             </div>
           </section>
         </>
+      ) : null}
+
+      {openedProduct ? (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-[rgba(6,5,4,0.78)] p-3" onClick={() => setOpenedProduct(null)}>
+          <article
+            className="panel max-h-[92vh] w-full max-w-4xl overflow-auto p-5"
+            onClick={(event) => {
+              event.stopPropagation();
+            }}
+          >
+            <div className="mb-4 flex items-start justify-between gap-3">
+              <div>
+                <p className="text-xs uppercase tracking-[0.1em] text-[#f0c189]">{categoryLabel(openedProduct.category, lang)}</p>
+                <h3 className="display-font mt-2 text-5xl text-[#fff8ec]">{openedProduct.name}</h3>
+                <p className="mt-1 text-sm text-[#e0ccb1]">{openedProduct.scent}</p>
+              </div>
+              <button className="pill-btn" onClick={() => setOpenedProduct(null)}>
+                Zapri
+              </button>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-[330px_1fr]">
+              <img src={productImage(openedProduct)} alt={openedProduct.name} className="aspect-square w-full rounded-2xl border border-[var(--line)] object-cover" />
+              <div>
+                <p className="text-sm leading-8 text-[#dbc8ad]">{openedProduct.description}</p>
+                <div className="mt-4 grid gap-2 text-sm text-[#dbc8ad] md:grid-cols-2">
+                  <p className="rounded-xl border border-[var(--line)] px-3 py-2">Cena: {formatPrice(Number((effectivePrice(openedProduct) * (1 - seasonExtra / 100)).toFixed(2)))}</p>
+                  <p className="rounded-xl border border-[var(--line)] px-3 py-2">
+                    {Number(openedProduct.stock || 0) > 0 ? t.stock(openedProduct.stock) : t.outOfStock(openedProduct.etaDays)}
+                  </p>
+                </div>
+                <p className="mt-3 rounded-xl border border-[var(--line)] px-3 py-2 text-sm text-[#dbc8ad]">Rocna izdelava premium voska, cisti burn in dolgotrajen vonj.</p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <button className="pill-btn border-[var(--gold)] bg-[var(--gold)] text-[#25190f]" onClick={() => addCatalogProduct(openedProduct)}>
+                    {t.addToCart}
+                  </button>
+                  <button className="pill-btn" onClick={() => setOpenedProduct(null)}>
+                    Zapri
+                  </button>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
       ) : null}
 
       <footer className="mx-auto w-[min(1180px,92%)] border-t border-[var(--line)] py-8">
