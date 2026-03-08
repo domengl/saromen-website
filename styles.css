@@ -34,6 +34,18 @@ a {
   text-decoration: none;
 }
 
+.site-notice {
+  width: 100%;
+  text-align: center;
+  background: #20180f;
+  color: #f2dfc3;
+  border-bottom: 1px solid var(--line);
+  padding: 10px 14px;
+  font-size: 12px;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+}
+
 .site-header {
   position: sticky;
   top: 0;
