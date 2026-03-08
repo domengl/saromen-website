@@ -1,35 +1,696 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="sl">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SAROMEN</title>
+  <title>SAROMEN | Luxury Candles</title>
+  <meta name="description" content="SAROMEN premium candle brand - elegantne svece za sodoben dom." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;700&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet" />
   <style>
+    :root {
+      --black: #0f0d0b;
+      --black-soft: #171411;
+      --gold: #c8a26f;
+      --gold-soft: #b88f57;
+      --cream: #f7efe2;
+      --beige: #ead9c0;
+      --line: rgba(200, 162, 111, 0.3);
+      --font-serif: "Cormorant Garamond", Georgia, serif;
+      --font-sans: "Manrope", "Segoe UI", sans-serif;
+      --max-width: 1180px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
     body {
       margin: 0;
-      background: #0f0f0f;
-      color: #f5f0e8;
-      font-family: Arial, sans-serif;
+      color: var(--cream);
+      font-family: var(--font-sans);
+      background:
+        radial-gradient(circle at top right, rgba(200, 162, 111, 0.13), transparent 35%),
+        radial-gradient(circle at bottom left, rgba(200, 162, 111, 0.1), transparent 40%),
+        var(--black);
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(15, 13, 11, 0.92);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .header-inner {
+      width: min(var(--max-width), 92%);
+      margin: 0 auto;
       display: flex;
       align-items: center;
+      justify-content: space-between;
+      padding: 16px 0;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .logo {
+      font-family: var(--font-serif);
+      font-size: 34px;
+      letter-spacing: 6px;
+      color: var(--gold);
+    }
+
+    .main-nav {
+      display: flex;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+
+    .main-nav a {
+      font-size: 14px;
+      letter-spacing: 1.3px;
+      text-transform: uppercase;
+      color: #f4e9d9;
+      opacity: 0.9;
+    }
+
+    .main-nav a:hover {
+      color: var(--gold);
+    }
+
+    .cart-toggle {
+      border: 1px solid var(--line);
+      color: var(--cream);
+      background: rgba(255, 255, 255, 0.02);
+      padding: 10px 14px;
+      border-radius: 99px;
+      font-size: 13px;
+      letter-spacing: 0.8px;
+      cursor: pointer;
+    }
+
+    .cart-toggle:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+
+    .container {
+      width: min(var(--max-width), 92%);
+      margin: 0 auto;
+    }
+
+    .hero {
+      min-height: 74vh;
+      display: grid;
+      align-items: center;
+      padding: 56px 0 40px;
+    }
+
+    .hero-content {
+      max-width: 760px;
+    }
+
+    .eyebrow {
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-size: 12px;
+      color: var(--beige);
+      margin-bottom: 16px;
+      display: inline-block;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 8px 14px;
+    }
+
+    h1 {
+      font-family: var(--font-serif);
+      font-size: clamp(40px, 8vw, 86px);
+      line-height: 0.98;
+      margin: 0;
+      color: #fff9ef;
+      letter-spacing: 1.3px;
+      text-wrap: balance;
+    }
+
+    .hero p {
+      margin: 22px 0 28px;
+      color: #e5d8c6;
+      font-size: clamp(16px, 2vw, 20px);
+      max-width: 620px;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
       justify-content: center;
-      min-height: 100vh;
+      min-width: 170px;
+      padding: 12px 20px;
+      border-radius: 999px;
+      font-size: 14px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      border: 1px solid transparent;
+      transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .btn-primary {
+      background: var(--gold);
+      color: #1f1811;
+      font-weight: 600;
+    }
+
+    .btn-primary:hover {
+      background: var(--gold-soft);
+      transform: translateY(-2px);
+    }
+
+    .btn-outline {
+      border-color: var(--line);
+      color: var(--cream);
+    }
+
+    .btn-outline:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+      transform: translateY(-2px);
+    }
+
+    .section {
+      padding: 24px 0 84px;
+    }
+
+    .section h2 {
+      font-family: var(--font-serif);
+      font-size: clamp(30px, 4vw, 52px);
+      margin: 0 0 8px;
+      color: #fff5e8;
+    }
+
+    .section-intro {
+      max-width: 620px;
+      color: #dac9b2;
+      margin-bottom: 30px;
+    }
+
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 18px;
+    }
+
+    .product-card {
+      background: linear-gradient(170deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01));
+      border: 1px solid rgba(200, 162, 111, 0.2);
+      border-radius: 20px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      min-height: 280px;
+    }
+
+    .product-tag {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--gold);
+      margin-bottom: 10px;
+    }
+
+    .product-name {
+      font-family: var(--font-serif);
+      font-size: 31px;
+      margin: 0 0 10px;
+      color: #fff7eb;
+    }
+
+    .product-desc {
+      font-size: 14px;
+      color: #d9cab6;
+      margin: 0 0 18px;
+      flex-grow: 1;
+    }
+
+    .product-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .price {
+      color: var(--gold);
+      font-weight: 600;
+      font-size: 18px;
+    }
+
+    .add-btn {
+      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--cream);
+      border-radius: 999px;
+      padding: 8px 14px;
+      cursor: pointer;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .add-btn:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+
+    .about-card,
+    .contact-card {
+      border: 1px solid rgba(200, 162, 111, 0.2);
+      border-radius: 20px;
+      background: linear-gradient(140deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0));
+      padding: 24px;
+      color: #dfd0ba;
+    }
+
+    .about-card p,
+    .contact-card p {
+      margin: 0;
+      line-height: 1.7;
+    }
+
+    .contact-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+    }
+
+    .site-footer {
+      border-top: 1px solid var(--line);
+      margin-top: 32px;
+      padding: 18px 0 30px;
+      color: #c9b59a;
+      font-size: 13px;
+    }
+
+    .footer-inner {
+      width: min(var(--max-width), 92%);
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .cart-panel {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: min(420px, 100%);
+      height: 100%;
+      background: #11100d;
+      border-left: 1px solid var(--line);
+      transform: translateX(100%);
+      transition: transform 0.28s ease;
+      z-index: 40;
+      display: flex;
       flex-direction: column;
     }
-    h1 {
-      font-size: 64px;
-      letter-spacing: 10px;
-      margin: 0;
+
+    .cart-panel.open {
+      transform: translateX(0);
     }
-    p {
-      margin-top: 16px;
-      font-size: 18px;
-      color: #c9aa7a;
+
+    .cart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .cart-title {
+      margin: 0;
+      font-family: var(--font-serif);
+      font-size: 32px;
+      color: var(--gold);
+    }
+
+    .close-cart {
+      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--cream);
+      border-radius: 999px;
+      width: 32px;
+      height: 32px;
+      cursor: pointer;
+    }
+
+    .cart-items {
+      list-style: none;
+      margin: 0;
+      padding: 16px 18px;
+      display: grid;
+      gap: 10px;
+      overflow: auto;
+      flex-grow: 1;
+    }
+
+    .cart-item {
+      border: 1px solid rgba(200, 162, 111, 0.2);
+      border-radius: 14px;
+      padding: 12px;
+      display: grid;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .cart-item-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 15px;
+    }
+
+    .item-name {
+      color: #fff3e1;
+    }
+
+    .item-meta {
+      font-size: 13px;
+      color: #ceb89a;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .remove-btn {
+      border: none;
+      background: transparent;
+      color: #e8b675;
+      padding: 0;
+      cursor: pointer;
+      text-align: left;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .cart-empty {
+      color: #cbb79c;
+      border: 1px dashed rgba(200, 162, 111, 0.3);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      margin: 18px;
+    }
+
+    .cart-footer {
+      border-top: 1px solid var(--line);
+      padding: 16px 18px 24px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .total-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 16px;
+      color: #f5e7d4;
+    }
+
+    .checkout-btn {
+      border: none;
+      border-radius: 999px;
+      padding: 12px 16px;
+      background: var(--gold);
+      color: #23190f;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .checkout-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    @media (max-width: 760px) {
+      .header-inner {
+        justify-content: center;
+      }
+
+      .main-nav {
+        justify-content: center;
+      }
+
+      .hero {
+        min-height: auto;
+        padding-top: 36px;
+      }
+
+      h1 {
+        line-height: 1.05;
+      }
     }
   </style>
 </head>
 <body>
-  <h1>SAROMEN</h1>
-  <p>Luxury Candle Studio</p>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="logo" href="#home">SAROMEN</a>
+      <nav class="main-nav" aria-label="Glavna navigacija">
+        <a href="#home">Home</a>
+        <a href="#shop">Shop</a>
+        <a href="#about">About</a>
+        <a href="#contact">Contact</a>
+      </nav>
+      <button class="cart-toggle" id="openCartBtn" type="button">Kosarica (0)</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero container" id="home">
+      <div class="hero-content">
+        <span class="eyebrow">Luxury Candle Brand</span>
+        <h1>Atmosfera, ujeta v premium sveci.</h1>
+        <p>
+          SAROMEN ustvarja elegantne disavne svece za moderne domove. Ciste linije, topel sijaj in prefinjene note za vecerne rituale.
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#shop">Poglej kolekcijo</a>
+          <a class="btn btn-outline" href="#about">Zgodba znamke</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section container" id="shop">
+      <h2>Shop</h2>
+      <p class="section-intro">
+        Testni izdelki za zacetek trgovine. Kasneje bova te kartice povezala na pravi backend in placilo.
+      </p>
+      <div class="product-grid" id="productGrid"></div>
+    </section>
+
+    <section class="section container" id="about">
+      <h2>About</h2>
+      <p class="section-intro">
+        SAROMEN je premium candle brand, zgrajen okoli ideje miru, estetike in topline. Vsak kos je ustvarjen za luksuzen ambient.
+      </p>
+      <div class="about-card">
+        <p>
+          Uporabljamo kakovostne voske in sodobne disavne profile. Vizualna smer je minimalna, elegantna in pripravljena za premium pozicioniranje znamke.
+        </p>
+      </div>
+    </section>
+
+    <section class="section container" id="contact">
+      <h2>Contact</h2>
+      <p class="section-intro">
+        Za wholesale, custom kolekcije ali sodelovanja nas kontaktiraj.
+      </p>
+      <div class="contact-grid">
+        <div class="contact-card">
+          <p><strong>Email:</strong> hello@saromen.com</p>
+        </div>
+        <div class="contact-card">
+          <p><strong>Instagram:</strong> @saromen.candles</p>
+        </div>
+        <div class="contact-card">
+          <p><strong>Lokacija:</strong> Slovenia / EU shipping soon</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <span>SAROMEN Luxury Candles</span>
+      <span>2026 All rights reserved.</span>
+    </div>
+  </footer>
+
+  <aside class="cart-panel" id="cartPanel" aria-hidden="true">
+    <div class="cart-header">
+      <h3 class="cart-title">Kosarica</h3>
+      <button class="close-cart" id="closeCartBtn" type="button" aria-label="Zapri kosarico">x</button>
+    </div>
+    <ul class="cart-items" id="cartItems"></ul>
+    <div class="cart-empty" id="cartEmpty">Kosarica je trenutno prazna.</div>
+    <div class="cart-footer">
+      <div class="total-row">
+        <span>Skupaj</span>
+        <strong id="cartTotal">EUR 0.00</strong>
+      </div>
+      <button class="checkout-btn" id="checkoutBtn" type="button" disabled>Test checkout</button>
+    </div>
+  </aside>
+
+  <script>
+    const products = [
+      { id: "noir-amber", name: "Noir Amber", scent: "Amber + Vanilla", description: "Topel vecerni vonj z elegantnim zlatim finishem.", price: 34 },
+      { id: "velvet-fig", name: "Velvet Fig", scent: "Fig + Sandalwood", description: "Sodoben sadni profil za sofisticiran dom.", price: 32 },
+      { id: "golden-musk", name: "Golden Musk", scent: "Musk + Cedar", description: "Globok in umirjen podpis za premium interier.", price: 36 },
+      { id: "cashmere-bloom", name: "Cashmere Bloom", scent: "White Tea + Floral", description: "Nezna dnevna aroma za clean luxe obcutek.", price: 30 }
+    ];
+
+    const cart = {};
+
+    const productGrid = document.getElementById("productGrid");
+    const cartPanel = document.getElementById("cartPanel");
+    const cartItems = document.getElementById("cartItems");
+    const cartTotal = document.getElementById("cartTotal");
+    const cartEmpty = document.getElementById("cartEmpty");
+    const openCartBtn = document.getElementById("openCartBtn");
+    const closeCartBtn = document.getElementById("closeCartBtn");
+    const checkoutBtn = document.getElementById("checkoutBtn");
+
+    function formatPrice(value) {
+      return "EUR " + value.toFixed(2);
+    }
+
+    function renderProducts() {
+      productGrid.innerHTML = products.map((product) => `
+        <article class="product-card">
+          <span class="product-tag">${product.scent}</span>
+          <h3 class="product-name">${product.name}</h3>
+          <p class="product-desc">${product.description}</p>
+          <div class="product-bottom">
+            <span class="price">${formatPrice(product.price)}</span>
+            <button class="add-btn" type="button" data-id="${product.id}">Dodaj</button>
+          </div>
+        </article>
+      `).join("");
+    }
+
+    function getCartStats() {
+      let total = 0;
+      let count = 0;
+
+      Object.entries(cart).forEach(([id, qty]) => {
+        const product = products.find((item) => item.id === id);
+        if (!product) return;
+        total += product.price * qty;
+        count += qty;
+      });
+
+      return { total, count };
+    }
+
+    function renderCart() {
+      const entries = Object.entries(cart).filter(([, qty]) => qty > 0);
+
+      if (entries.length === 0) {
+        cartItems.innerHTML = "";
+        cartEmpty.style.display = "block";
+        checkoutBtn.disabled = true;
+      } else {
+        cartEmpty.style.display = "none";
+        checkoutBtn.disabled = false;
+        cartItems.innerHTML = entries.map(([id, qty]) => {
+          const product = products.find((item) => item.id === id);
+          if (!product) return "";
+
+          return `
+            <li class="cart-item">
+              <div class="cart-item-head">
+                <span class="item-name">${product.name}</span>
+                <strong>${formatPrice(product.price * qty)}</strong>
+              </div>
+              <div class="item-meta">
+                <span>Kolicina: ${qty}</span>
+                <span>${formatPrice(product.price)} / kos</span>
+              </div>
+              <button class="remove-btn" type="button" data-remove="${id}">Odstrani</button>
+            </li>
+          `;
+        }).join("");
+      }
+
+      const { total, count } = getCartStats();
+      cartTotal.textContent = formatPrice(total);
+      openCartBtn.textContent = `Kosarica (${count})`;
+    }
+
+    function addToCart(id) {
+      if (!cart[id]) {
+        cart[id] = 0;
+      }
+      cart[id] += 1;
+      renderCart();
+    }
+
+    function removeFromCart(id) {
+      if (!cart[id]) return;
+      cart[id] -= 1;
+      if (cart[id] <= 0) {
+        delete cart[id];
+      }
+      renderCart();
+    }
+
+    productGrid.addEventListener("click", (event) => {
+      const addButton = event.target.closest("[data-id]");
+      if (!addButton) return;
+      addToCart(addButton.dataset.id);
+    });
+
+    cartItems.addEventListener("click", (event) => {
+      const removeButton = event.target.closest("[data-remove]");
+      if (!removeButton) return;
+      removeFromCart(removeButton.dataset.remove);
+    });
+
+    openCartBtn.addEventListener("click", () => {
+      cartPanel.classList.add("open");
+      cartPanel.setAttribute("aria-hidden", "false");
+    });
+
+    closeCartBtn.addEventListener("click", () => {
+      cartPanel.classList.remove("open");
+      cartPanel.setAttribute("aria-hidden", "true");
+    });
+
+    checkoutBtn.addEventListener("click", () => {
+      alert("Test checkout: v naslednjem koraku bova to povezala na pravi payment sistem (Stripe).");
+    });
+
+    renderProducts();
+    renderCart();
+  </script>
 </body>
 </html>
