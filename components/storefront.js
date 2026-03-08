@@ -252,8 +252,13 @@ export default function Storefront() {
 
   return (
     <div className="pb-16">
-      <div className="border-b border-[var(--line)] bg-[#20180f] px-4 py-2 text-center text-[11px] uppercase tracking-[0.08em] text-[#f3dfc0]">
-        TESTNA STRAN - produkcijski setup: Next.js + Tailwind + Stripe + Prisma
+      <div className="border-b border-[var(--line)] bg-[#26190f] px-4 py-4 text-center">
+        <div className="mx-auto w-[min(1180px,92%)]">
+          <p className="display-font text-4xl uppercase tracking-[0.09em] text-[#ffd7a2] md:text-6xl">TESTNA SPLETNA STRAN</p>
+          <p className="mt-2 text-xs uppercase tracking-[0.11em] text-[#ffd7a2] md:text-sm">
+            Pravno obvestilo: ne odgovarjamo za nastale tezave, napake ali posledice uporabe te testne spletne strani.
+          </p>
+        </div>
       </div>
 
       <header className="sticky top-0 z-30 border-b border-[var(--line)] bg-[rgba(15,13,11,0.9)] backdrop-blur-md">
